@@ -15,4 +15,12 @@ public class UserAlbumRepository(MongoDbContext context) : Repository<UserAlbum>
 
         return await _collection.Find(filter).ToListAsync();
     }
+
+    public async Task<UserAlbum> GetByUserIdAsync(string userId)
+    {
+        var builder = Builders<UserAlbum>.Filter;
+        var filter = builder.Eq(a => a.UserId, userId);
+
+        return await _collection.Find(filter).FirstOrDefaultAsync(); ;
+    }
 }

@@ -13,8 +13,10 @@ public class CreateUserCommandHandler(IUserRepository userRepository) : IRequest
     {
         var entity = new User
         {
+            GoogleId = request.GoogleId,
             Email = request.Email,
             Name = request.Name,
+            PhotoUrl = request.PhotoUrl
         };
 
         try

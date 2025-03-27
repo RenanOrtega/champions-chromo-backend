@@ -10,5 +10,8 @@ public class UserAlbumDto
 public class UserAlbumEntryDto
 {
     public string AlbumId { get; set; } = string.Empty;
-    public List<int> OwnedStickers { get; set; } = [];
+    public List<int> OwnedCommonStickers { get; set; } = [];
+    public List<int> OwnedFrameStickers { get; set; } = [];
+    public List<int> OwnedLegendStickers { get; set; } = [];
+    public List<int> OwnedA4Stickers { get; set; } = [];
 }

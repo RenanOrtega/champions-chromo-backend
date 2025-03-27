@@ -11,15 +11,23 @@ public class CreateUserAlbumCommandHandler(IUserAlbumRepository userAlbumReposit
 
     public async Task<Result> Handle(CreateUserAlbumCommand request, CancellationToken cancellationToken)
     {
-        var entity = new UserAlbum
-        {
-            Albums = request.Albums,
-            UserId = request.UserId,
-        };
-
         try
         {
-            await _userAlbumRepository.AddAsync(entity);
+            var userAlbum = await _userAlbumRepository.GetByUserIdAsync(request.UserId);
+
+            if (userAlbum is null)
+            {
+                var entity = new UserAlbum
+                {
+                    Albums = request.Albums,
+                    UserId = request.UserId,
+                };
+                await _userAlbumRepository.AddAsync(entity);
+                return Result.Success();
+            }
+
+            userAlbum.Albums = request.Albums;
+            await _userAlbumRepository.UpdateAsync(request.UserId, userAlbum);
             return Result.Success();
         }
         catch (Exception ex)
