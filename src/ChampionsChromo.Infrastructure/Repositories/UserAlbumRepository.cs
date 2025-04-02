@@ -7,7 +7,7 @@ namespace ChampionsChromo.Infrastructure.Repositories;
 
 public class UserAlbumRepository(MongoDbContext context) : Repository<UserAlbum>(context), IUserAlbumRepository
 {
-    public async Task<IEnumerable<UserAlbum>> FindByAlbumIdAsync(string albumId, string userId)
+    public async Task<IEnumerable<UserAlbum>> GetByUserIdAndAlbumId(string albumId, string userId)
     {
         var builder = Builders<UserAlbum>.Filter;
         var filter = builder.ElemMatch(a => a.Albums, album => album.AlbumId == albumId) &

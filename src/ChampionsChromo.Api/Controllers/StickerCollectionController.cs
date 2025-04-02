@@ -1,4 +1,6 @@
 ﻿using ChampionsChromo.Application.StickerCollection.Commands.CreateUserAlbum;
+using ChampionsChromo.Application.StickerCollection.Commands.AddStickerToAlbum;
+using ChampionsChromo.Application.StickerCollection.Commands.RemoveStickerFromAlbum;
 using ChampionsChromo.Application.StickerCollection.Queries.GetStickerCollecionByAlbumIdAndUserId;
 using ChampionsChromo.Application.StickerCollection.Queries.GetUserAlbumById;
 using ChampionsChromo.Application.StickerCollection.Queries.GetUserAlbums;
@@ -43,11 +45,41 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpGet("userId/{userId}/albumId/{albumId}")]
-    public async Task<IActionResult> GetByAlbumIdAndUserId(string userId, string albumId)
+    [HttpGet("userId/{userId}")]
+    public async Task<IActionResult> GetByUserId(string userId)
     {
-        var result = await _mediator.Send(new GetStickerCollecionByAlbumIdAndUserIdQuery(albumId, userId));
+        var result = await _mediator.Send(new GetStickerCollecionByUserIdQuery(userId));
 
         return Ok(result.Value);
+    }
+
+    [HttpPatch("userId/{userId}/albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/add")]
+    public async Task<IActionResult> AddSticker(
+        string userId,
+        string albumId,
+        int stickerNumber,
+        string stickerType)
+    {
+        var result = await _mediator.Send(new AddStickerToAlbumCommand(userId, albumId, stickerNumber, stickerType));
+
+        if (result.IsSuccess)
+            return Ok(result);
+
+        return BadRequest(result.Error);
+    }
+
+    [HttpPatch("userId/{userId}/albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/remove")]
+    public async Task<IActionResult> RemoveSticker(
+        string userId,
+        string albumId,
+        int stickerNumber,
+        string stickerType)
+    {
+        var result = await _mediator.Send(new RemoveStickerFromAlbumCommand(userId, albumId, stickerNumber, stickerType));
+
+        if (result.IsSuccess)
+            return Ok(result);
+
+        return BadRequest(result.Error);
     }
 }

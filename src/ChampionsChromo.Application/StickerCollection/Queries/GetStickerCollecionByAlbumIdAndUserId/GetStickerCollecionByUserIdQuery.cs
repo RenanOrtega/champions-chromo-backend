@@ -3,4 +3,4 @@ using MediatR;
 
 namespace ChampionsChromo.Application.StickerCollection.Queries.GetStickerCollecionByAlbumIdAndUserId;
 
-public record GetStickerCollecionByAlbumIdAndUserIdQuery(string AlbumId, string UserId) : IRequest<Result<IEnumerable<UserAlbumDto>>>;
+public record GetStickerCollecionByUserIdQuery(string UserId) : IRequest<Result<UserAlbumDto>>;
