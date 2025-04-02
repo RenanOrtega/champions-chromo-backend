@@ -3,7 +3,7 @@ using MediatR;
 
 namespace ChampionsChromo.Application.Users.Commands.CreateUser;
 
-public record CreateUserCommand : IRequest<Result>
+public record LoginUserCommand : IRequest<Result<string>>
 {
     public string GoogleId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;

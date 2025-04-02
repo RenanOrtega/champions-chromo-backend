@@ -53,14 +53,13 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
         return Ok(result.Value);
     }
 
-    [HttpPatch("userId/{userId}/albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/add")]
+    [HttpPatch("albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/add")]
     public async Task<IActionResult> AddSticker(
-        string userId,
         string albumId,
         int stickerNumber,
         string stickerType)
     {
-        var result = await _mediator.Send(new AddStickerToAlbumCommand(userId, albumId, stickerNumber, stickerType));
+        var result = await _mediator.Send(new AddStickerToAlbumCommand(albumId, stickerNumber, stickerType));
 
         if (result.IsSuccess)
             return Ok(result);
@@ -68,14 +67,13 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
         return BadRequest(result.Error);
     }
 
-    [HttpPatch("userId/{userId}/albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/remove")]
+    [HttpPatch("albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/remove")]
     public async Task<IActionResult> RemoveSticker(
-        string userId,
         string albumId,
         int stickerNumber,
         string stickerType)
     {
-        var result = await _mediator.Send(new RemoveStickerFromAlbumCommand(userId, albumId, stickerNumber, stickerType));
+        var result = await _mediator.Send(new RemoveStickerFromAlbumCommand(albumId, stickerNumber, stickerType));
 
         if (result.IsSuccess)
             return Ok(result);

@@ -12,13 +12,13 @@ public class UserController(IMediator mediator) : ControllerBase
 {
     private readonly IMediator _mediator = mediator;
 
-    [HttpPost]
-    public async Task<IActionResult> Create(CreateUserCommand command)
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
     {
         var result = await _mediator.Send(command);
 
         if (result.IsSuccess)
-            return Ok(result);
+            return Ok(new { token = result.Value });
 
         return BadRequest(result.Error);
     }

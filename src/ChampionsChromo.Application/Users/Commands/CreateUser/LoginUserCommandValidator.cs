@@ -2,9 +2,9 @@
 
 namespace ChampionsChromo.Application.Users.Commands.CreateUser;
 
-public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 {
-    public CreateUserCommandValidator()
+    public LoginUserCommandValidator()
     {
         
     }
