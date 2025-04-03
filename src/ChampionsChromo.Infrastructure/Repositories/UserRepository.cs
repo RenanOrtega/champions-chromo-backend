@@ -7,10 +7,10 @@ namespace ChampionsChromo.Infrastructure.Repositories;
 
 public class UserRepository(MongoDbContext context) : Repository<User>(context), IUserRepository
 {
-    public async Task<User> GetByGoogleIdAsync(string subject)
+    public async Task<User> GetByFirebaseIdAsync(string subject)
     {
         var builder = Builders<User>.Filter;
-        var filter = builder.Eq(u => u.GoogleId, subject);
+        var filter = builder.Eq(u => u.FirebaseId, subject);
 
         return await _collection.Find(filter).FirstOrDefaultAsync();
     }

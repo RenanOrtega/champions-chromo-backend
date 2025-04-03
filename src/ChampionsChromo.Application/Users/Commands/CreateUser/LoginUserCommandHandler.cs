@@ -4,6 +4,7 @@ using System.Text;
 using ChampionsChromo.Application.Common.Models;
 using ChampionsChromo.Core.Entities;
 using ChampionsChromo.Core.Repositories.Interfaces;
+using FirebaseAdmin.Auth;
 using Google.Apis.Auth;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +19,7 @@ public class LoginUserCommandHandler(IUserRepository userRepository, IConfigurat
 
     public async Task<Result<string>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
-        var token = await AuthenticateGoogleUserAsync(request.GoogleId);
+        var token = await AuthenticateGoogleUserAsync(request.FirebaseId);
         return Result<string>.Success(token);
     }
 
@@ -35,7 +36,7 @@ public class LoginUserCommandHandler(IUserRepository userRepository, IConfigurat
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim("GoogleId", user.GoogleId)
+            new Claim("GoogleId", user.FirebaseId)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!));
@@ -57,31 +58,29 @@ public class LoginUserCommandHandler(IUserRepository userRepository, IConfigurat
     {
         try
         {
-            var settings = new GoogleJsonWebSignature.ValidationSettings
-            {
-                Audience = [_configuration["Authentication:Google:ClientId"]]
-            };
+            FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(googleIdToken);
+            string uid = decodedToken.Uid;
 
-            var payload = await GoogleJsonWebSignature.ValidateAsync(googleIdToken, settings);
+            UserRecord userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
 
-            var user = await _userRepository.GetByGoogleIdAsync(payload.Subject);
+            var user = await _userRepository.GetByFirebaseIdAsync(uid);
             if (user == null)
             {
                 user = new User
                 {
-                    GoogleId = payload.Subject,
-                    Email = payload.Email,
-                    Name = payload.Name,
-                    PhotoUrl = payload.Picture
+                    FirebaseId = uid,
+                    Email = userRecord.Email,
+                    Name = userRecord.DisplayName,
+                    PhotoUrl = userRecord.PhotoUrl
                 };
 
                 await _userRepository.AddAsync(user);
                 return user;
             }
 
-            user.Email = payload.Email;
-            user.Name = payload.Name;
-            user.PhotoUrl = payload.Picture;
+            user.Email = userRecord.Email;
+            user.Name = userRecord.DisplayName;
+            user.PhotoUrl = userRecord.PhotoUrl;
 
             await _userRepository.UpdateAsync(user.Id, user);
             return user;

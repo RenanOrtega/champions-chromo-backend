@@ -4,5 +4,5 @@ namespace ChampionsChromo.Core.Repositories.Interfaces;
 
 public interface IUserRepository : IRepository<User>
 {
-    Task<User> GetByGoogleIdAsync(string subject);
+    Task<User> GetByFirebaseIdAsync(string subject);
 }
