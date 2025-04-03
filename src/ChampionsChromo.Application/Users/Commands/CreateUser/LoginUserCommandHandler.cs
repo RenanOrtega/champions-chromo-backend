@@ -4,6 +4,8 @@ using System.Text;
 using ChampionsChromo.Application.Common.Models;
 using ChampionsChromo.Core.Entities;
 using ChampionsChromo.Core.Repositories.Interfaces;
+using ChampionsChromo.Core.Services;
+using ChampionsChromo.Core.Services.Interfaces;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth;
 using MediatR;
@@ -12,20 +14,21 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ChampionsChromo.Application.Users.Commands.CreateUser;
 
-public class LoginUserCommandHandler(IUserRepository userRepository, IConfiguration configuration) : IRequestHandler<LoginUserCommand, Result<string>>
+public class LoginUserCommandHandler(IUserRepository userRepository, IConfiguration configuration, IFirebaseAuthService firebaseAuthService) : IRequestHandler<LoginUserCommand, Result<string>>
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IConfiguration _configuration = configuration;
+    private readonly IFirebaseAuthService _firebaseAuthService = firebaseAuthService;
 
     public async Task<Result<string>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
-        var token = await AuthenticateGoogleUserAsync(request.FirebaseId);
+        var token = await AuthenticateFirebaseUserAsync(request.FirebaseId);
         return Result<string>.Success(token);
     }
 
-    private async Task<string> AuthenticateGoogleUserAsync(string googleIdToken)
+    private async Task<string> AuthenticateFirebaseUserAsync(string googleIdToken)
     {
-        var user = await GetOrCreateUserFromGoogleTokenAsync(googleIdToken);
+        var user = await GetOrCreateUserFromFirebaseTokenAsync(googleIdToken);
         return GenerateJwtToken(user);
     }
 
@@ -36,7 +39,7 @@ public class LoginUserCommandHandler(IUserRepository userRepository, IConfigurat
             new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(ClaimTypes.Name, user.Name),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim("GoogleId", user.FirebaseId)
+            new Claim("FirebaseId", user.FirebaseId)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!));
@@ -54,21 +57,18 @@ public class LoginUserCommandHandler(IUserRepository userRepository, IConfigurat
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private async Task<User> GetOrCreateUserFromGoogleTokenAsync(string googleIdToken)
+    private async Task<User> GetOrCreateUserFromFirebaseTokenAsync(string googleIdToken)
     {
         try
         {
-            FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(googleIdToken);
-            string uid = decodedToken.Uid;
+            var userRecord = await _firebaseAuthService.VerifyAndGetUserAsync(googleIdToken);
 
-            UserRecord userRecord = await FirebaseAuth.DefaultInstance.GetUserAsync(uid);
-
-            var user = await _userRepository.GetByFirebaseIdAsync(uid);
+            var user = await _userRepository.GetByFirebaseIdAsync(userRecord.Uid);
             if (user == null)
             {
                 user = new User
                 {
-                    FirebaseId = uid,
+                    FirebaseId = userRecord.Uid,
                     Email = userRecord.Email,
                     Name = userRecord.DisplayName,
                     PhotoUrl = userRecord.PhotoUrl

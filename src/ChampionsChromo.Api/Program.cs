@@ -1,6 +1,7 @@
 using ChampionsChromo.Api.Extensions;
 using ChampionsChromo.Api.Middlewares;
 using ChampionsChromo.Application;
+using ChampionsChromo.Core.Extensions;
 using ChampionsChromo.Infrastructure;
 using ChampionsChromo.Infrastructure.Configurations;
 using MediatR;
@@ -13,6 +14,7 @@ builder.Services.Configure<MongoDbSettings>(
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+builder.Services.AddCore();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -20,6 +22,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UserIdentityBehaviorMiddleware<,>));
 
 builder.Services.AddCors(options =>
