@@ -16,7 +16,8 @@ public static class DependencyInjection
             .AddScoped<IAlbumRepository, AlbumRepository>()
             .AddScoped<ISchoolRepository, SchoolRepository>()
             .AddScoped<IUserRepository, UserRepository>()
-            .AddScoped<IUserAlbumRepository, UserAlbumRepository>();
+            .AddScoped<IUserAlbumRepository, UserAlbumRepository>()
+            .AddScoped<IPixRepository, PixRepository>();
 
         return services;
     }
