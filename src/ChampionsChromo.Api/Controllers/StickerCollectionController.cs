@@ -6,6 +6,7 @@ using ChampionsChromo.Application.StickerCollection.Queries.GetUserAlbumById;
 using ChampionsChromo.Application.StickerCollection.Queries.GetUserAlbums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ChampionsChromo.Core.Enums;
 
 namespace ChampionsChromo.Api.Controllers;
 
@@ -37,18 +38,18 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
         return NotFound(result.Error);
     }
 
+    //[HttpGet]
+    //public async Task<IActionResult> GetAll()
+    //{
+    //    var result = await _mediator.Send(new GetUserAlbumsQuery());
+
+    //    return Ok(result.Value);
+    //}
+
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetByUserId()
     {
-        var result = await _mediator.Send(new GetUserAlbumsQuery());
-
-        return Ok(result.Value);
-    }
-
-    [HttpGet("userId/{userId}")]
-    public async Task<IActionResult> GetByUserId(string userId)
-    {
-        var result = await _mediator.Send(new GetStickerCollecionByUserIdQuery(userId));
+        var result = await _mediator.Send(new GetStickerCollecionByUserIdQuery());
 
         return Ok(result.Value);
     }
@@ -57,7 +58,7 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> AddSticker(
         string albumId,
         int stickerNumber,
-        string stickerType)
+        StickerType stickerType)
     {
         var result = await _mediator.Send(new AddStickerToAlbumCommand(albumId, stickerNumber, stickerType));
 
@@ -71,7 +72,7 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> RemoveSticker(
         string albumId,
         int stickerNumber,
-        string stickerType)
+        StickerType stickerType)
     {
         var result = await _mediator.Send(new RemoveStickerFromAlbumCommand(albumId, stickerNumber, stickerType));
 

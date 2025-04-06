@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChampionsChromo.Application.Common.Models;
+using ChampionsChromo.Core.Entities;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using MediatR;
 
@@ -15,7 +16,15 @@ public class GetStickerCollecionByUserIdQueryHandler(IUserAlbumRepository userAl
         var userAlbum = await _userAlbumRepository.GetByUserIdAsync(request.UserId);
 
         if (userAlbum == null)
-            return Result<UserAlbumDto>.Failure($"StickerCollection with UserId {request.UserId} not found.");
+        {
+            var defaultUserAlbum = new UserAlbum()
+            {
+                UserId = request.UserId,
+                Albums = [], 
+            };
+            await _userAlbumRepository.AddAsync(defaultUserAlbum);
+            return Result<UserAlbumDto>.Success(_mapper.Map<UserAlbumDto>(defaultUserAlbum));
+        }
 
         return Result<UserAlbumDto>.Success(_mapper.Map<UserAlbumDto>(userAlbum));
     }

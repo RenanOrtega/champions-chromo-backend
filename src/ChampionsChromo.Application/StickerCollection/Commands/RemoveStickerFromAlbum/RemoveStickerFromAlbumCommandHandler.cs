@@ -1,5 +1,6 @@
 using ChampionsChromo.Application.Common.Models;
 using ChampionsChromo.Core.Entities;
+using ChampionsChromo.Core.Enums;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using MediatR;
 
@@ -34,12 +35,12 @@ public class RemoveStickerFromAlbumCommandHandler(IUserAlbumRepository userAlbum
         return Result.Success();
     }
 
-    private static List<int>? GetStickerList(UserAlbumEntry entry, string stickerType) => stickerType.ToLower() switch
+    private static List<int>? GetStickerList(UserAlbumEntry entry, StickerType stickerType) => stickerType switch
     {
-        "comum" => entry.OwnedCommonStickers,
-        "quadro" => entry.OwnedFrameStickers,
-        "legends" => entry.OwnedLegendStickers,
-        "a4" => entry.OwnedA4Stickers,
+        StickerType.Comum => entry.OwnedCommonStickers,
+        StickerType.Quadro => entry.OwnedFrameStickers,
+        StickerType.Legends => entry.OwnedLegendStickers,
+        StickerType.A4 => entry.OwnedA4Stickers,
         _ => null
     };
 } 
