@@ -24,7 +24,6 @@ public class CreateAlbumCommandHandler(IAlbumRepository albumRepository) : IRequ
             CoverImage = request.CoverImage
         };
 
-
         try
         {
             await _albumRepository.AddAsync(entity);
