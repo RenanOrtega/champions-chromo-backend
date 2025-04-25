@@ -34,7 +34,7 @@ public class PixController(IMediator mediator, IConfiguration configuration) : C
         var result = await _mediator.Send(command);
 
         if (result.IsSuccess)
-            return Ok();
+            return Ok(result.Value);
 
         return BadRequest(result.Error);
     }
