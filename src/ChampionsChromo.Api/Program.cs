@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using ChampionsChromo.Api.Extensions;
 using ChampionsChromo.Api.Middlewares;
 using ChampionsChromo.Application;
@@ -16,14 +17,20 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddCore();
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options => 
+    { 
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
-builder.Services.AddJwtAuthentication(builder.Configuration);
+//builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UserIdentityBehaviorMiddleware<,>));
+//builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UserIdentityBehaviorMiddleware<,>));
 
 builder.Services.AddCors(options =>
 {
@@ -46,7 +53,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
