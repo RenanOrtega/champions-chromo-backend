@@ -16,12 +16,9 @@ public class CreateAlbumCommandHandler(IAlbumRepository albumRepository) : IRequ
             SchoolId = request.SchoolId,
             Name = request.Name,
             Price = request.Price,
-            CommonStickers = request.CommonStickers,
-            FrameStickers = request.FrameStickers,
-            LegendStickers = request.LegendStickers,
-            A4Stickers = request.A4Stickers,
             ReleaseDate = request.ReleaseDate,
-            CoverImage = request.CoverImage
+            CoverImage = request.CoverImage,
+            TotalStickers = request.TotalStickers
         };
 
         try
