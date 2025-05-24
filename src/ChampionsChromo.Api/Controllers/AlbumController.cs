@@ -1,4 +1,5 @@
 ﻿using ChampionsChromo.Application.Albums.Commands.CreateAlbum;
+using ChampionsChromo.Application.Albums.Commands.DeleteAlbum;
 using ChampionsChromo.Application.Albums.Queries.GetAlbumById;
 using ChampionsChromo.Application.Albums.Queries.GetAlbumBySchoolId;
 using ChampionsChromo.Application.Albums.Queries.GetAlbums;
@@ -52,5 +53,16 @@ public class AlbumController(IMediator mediator) : ControllerBase
         var result = await _mediator.Send(new GetAlbumsQuery());
 
         return Ok(result.Value);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] string id)
+    {
+        var result = await _mediator.Send(new DeleteAlbumCommand(id));
+
+        if (result.IsSuccess)
+            return Ok();
+
+        return NotFound(result.Error);
     }
 }

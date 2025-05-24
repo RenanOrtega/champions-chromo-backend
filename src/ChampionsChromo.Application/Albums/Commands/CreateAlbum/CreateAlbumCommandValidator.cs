@@ -15,8 +15,5 @@ public class CreateAlbumCommandValidator : AbstractValidator<CreateAlbumCommand>
 
         RuleFor(v => v.Price)
             .GreaterThanOrEqualTo(0).WithMessage("Price must be greater than or equal to 0");
-
-        RuleFor(v => v.ReleaseDate)
-            .NotEmpty().WithMessage("Release date is required");
     }
 }

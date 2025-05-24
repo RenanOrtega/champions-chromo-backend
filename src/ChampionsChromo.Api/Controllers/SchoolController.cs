@@ -1,4 +1,5 @@
 ﻿using ChampionsChromo.Application.Schools.Commands.CreateSchool;
+using ChampionsChromo.Application.Schools.Commands.DeleteSchool;
 using ChampionsChromo.Application.Schools.Queries.GetSchoolById;
 using ChampionsChromo.Application.Schools.Queries.GetSchools;
 using MediatR;
@@ -40,5 +41,16 @@ public class SchoolController(IMediator mediator) : ControllerBase
         var result = await _mediator.Send(new GetSchoolsQuery());
 
         return Ok(result.Value);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] string id)
+    {
+        var result = await _mediator.Send(new DeleteSchoolCommand(id));
+
+        if (result.IsSuccess)
+            return Ok();
+
+        return NotFound(result.Error);
     }
 }
