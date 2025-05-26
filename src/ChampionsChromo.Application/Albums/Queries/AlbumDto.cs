@@ -1,6 +1,4 @@
-﻿using ChampionsChromo.Core.Entities;
-
-namespace ChampionsChromo.Application.Albums.Queries;
+﻿namespace ChampionsChromo.Application.Albums.Queries;
 
 public class AlbumDto
 {
@@ -11,4 +9,7 @@ public class AlbumDto
     public DateTime ReleaseDate { get; set; }
     public string CoverImage { get; set; } = string.Empty;
     public int TotalStickers { get; set; }
+    public bool HasCommon { get; set; }
+    public bool HasLegend { get; set; }
+    public bool HasA4 { get; set; }
 }

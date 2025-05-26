@@ -11,5 +11,8 @@ public record CreateAlbumCommand : IRequest<Result>
     public decimal Price { get; set; }
     public DateTime ReleaseDate { get; set; }
     public string CoverImage { get; set; } = string.Empty;
+    public bool HasCommon { get; set; }
+    public bool HasLegend { get; set; }
+    public bool HasA4 { get; set; }
     public int TotalStickers { get; set; }
 }

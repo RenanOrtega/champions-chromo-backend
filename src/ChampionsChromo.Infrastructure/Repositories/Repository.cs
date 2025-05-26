@@ -42,4 +42,9 @@ public class Repository<T>(MongoDbContext context) : IRepository<T> where T : cl
         var filter = Builders<T>.Filter.Eq("_id", new ObjectId(id));
         await _collection.ReplaceOneAsync(filter, entity);
     }
+
+    public async Task<long> CountAsync()
+    {
+        return await _collection.CountDocumentsAsync(_ => true);
+    }
 }

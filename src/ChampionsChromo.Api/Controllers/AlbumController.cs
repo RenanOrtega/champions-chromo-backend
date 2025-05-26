@@ -1,8 +1,10 @@
 ﻿using ChampionsChromo.Application.Albums.Commands.CreateAlbum;
 using ChampionsChromo.Application.Albums.Commands.DeleteAlbum;
+using ChampionsChromo.Application.Albums.Commands.UpdateAlbum;
 using ChampionsChromo.Application.Albums.Queries.GetAlbumById;
 using ChampionsChromo.Application.Albums.Queries.GetAlbumBySchoolId;
 using ChampionsChromo.Application.Albums.Queries.GetAlbums;
+using ChampionsChromo.Application.Schools.Commands.UpdateSchool;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -64,5 +66,17 @@ public class AlbumController(IMediator mediator) : ControllerBase
             return Ok();
 
         return NotFound(result.Error);
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Update(UpdateAlbumCommmand command, [FromRoute] string id)
+    {
+        command.Id = id;
+        var result = await _mediator.Send(command);
+
+        if (result.IsSuccess)
+            return Ok(result);
+
+        return BadRequest(result.Error);
     }
 }

@@ -10,4 +10,5 @@ public interface IRepository<T>
     Task AddAsync(T entity);
     Task UpdateAsync(string id, T entity);
     Task DeleteAsync(string id);
+    Task<long> CountAsync();
 }

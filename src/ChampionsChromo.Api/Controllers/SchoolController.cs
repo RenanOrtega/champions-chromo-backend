@@ -1,5 +1,7 @@
-﻿using ChampionsChromo.Application.Schools.Commands.CreateSchool;
+﻿using ChampionsChromo.Application.Albums.Commands.UpdateAlbum;
+using ChampionsChromo.Application.Schools.Commands.CreateSchool;
 using ChampionsChromo.Application.Schools.Commands.DeleteSchool;
+using ChampionsChromo.Application.Schools.Commands.UpdateSchool;
 using ChampionsChromo.Application.Schools.Queries.GetSchoolById;
 using ChampionsChromo.Application.Schools.Queries.GetSchools;
 using MediatR;
@@ -52,5 +54,17 @@ public class SchoolController(IMediator mediator) : ControllerBase
             return Ok();
 
         return NotFound(result.Error);
+    }
+
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> Update(UpdateSchoolCommand command, [FromRoute] string id)
+    {
+        command.Id = id;
+        var result = await _mediator.Send(command);
+
+        if (result.IsSuccess)
+            return Ok(result);
+
+        return BadRequest(result.Error);
     }
 }
