@@ -1,12 +1,6 @@
-﻿using ChampionsChromo.Application.Albums.Commands.CreateAlbum;
-using ChampionsChromo.Application.Albums.Commands.DeleteAlbum;
-using ChampionsChromo.Application.Albums.Commands.UpdateAlbum;
-using ChampionsChromo.Application.Albums.Queries.GetAlbumById;
-using ChampionsChromo.Application.Albums.Queries.GetAlbumBySchoolId;
-using ChampionsChromo.Application.Albums.Queries.GetAlbums;
-using ChampionsChromo.Application.Dashboard.Queries.GetMetrics;
-using ChampionsChromo.Application.Schools.Commands.UpdateSchool;
+﻿using ChampionsChromo.Application.Dashboard.Queries.GetMetrics;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChampionsChromo.Api.Controllers;
@@ -19,6 +13,7 @@ public class DashboardController(IMediator mediator) : ControllerBase
 
 
     [HttpGet("metrics")]
+    [Authorize]
     public async Task<IActionResult> GetMetrics()
     {
         var result = await _mediator.Send(new GetMetricsQuery());

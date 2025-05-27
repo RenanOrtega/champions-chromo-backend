@@ -1,7 +1,6 @@
 ﻿using ChampionsChromo.Application.Auth.Commands;
 using ChampionsChromo.Application.Auth.Queries;
 using MediatR;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChampionsChromo.Api.Controllers;
@@ -20,52 +19,58 @@ public class AuthController(IMediator mediator) : ControllerBase
         if (!result.IsSuccess)
         {
             Console.WriteLine(result.Error);
-            return Unauthorized();
+            return Unauthorized(result.Error);
         }
 
-        SetAuthCookie(result.Value.Token);
+        return Ok();
+    }
 
-        return Ok(new
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        try
         {
-            message = result.Value.Message,
-            user = new
+            var refreshToken = Request.Cookies["REFRESH_TOKEN"];
+            var result = await _mediator.Send(new RefreshCommand(refreshToken));
+
+            if (!result.IsSuccess)
             {
-                id = result.Value.User!.Id,
-                username = result.Value.User.Username,
-                roles = result.Value.User.Roles
+                Console.WriteLine(result.Error);
+                return Unauthorized(result.Error);
             }
-        });
+
+            return Ok();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
-        var result = await _mediator.Send(command);
+        await _mediator.Send(command);
 
-        if (!result.IsSuccess)
-        {
-            return BadRequest(new { message = result.Value.Message });
-        }
-
-        SetAuthCookie(result.Value.Token);
-
-        return Ok(new
-        {
-            message = result.Value.Message,
-            user = new
-            {
-                id = result.Value.User!.Id,
-                username = result.Value.User.Username,
-                roles = result.Value.User.Roles
-            }
-        });
+        return Created();
     }
 
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        Response.Cookies.Delete("AuthToken");
-        return Ok(new { message = "Logout realizado com sucesso" });
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(-1) 
+        };
+
+        Response.Cookies.Append("ACCESS_TOKEN", "", cookieOptions);
+        Response.Cookies.Append("REFRESH_TOKEN", "", cookieOptions);
+        
+        return Ok();
     }
 
     [HttpGet("me")]
@@ -74,7 +79,7 @@ public class AuthController(IMediator mediator) : ControllerBase
         var token = GetTokenFromCookie();
         if (string.IsNullOrEmpty(token))
         {
-            return Unauthorized(new { message = "Token não encontrado" });
+            return Unauthorized();
         }
 
         var query = new GetCurrentUserQuery(token);
@@ -94,21 +99,8 @@ public class AuthController(IMediator mediator) : ControllerBase
         });
     }
 
-    private void SetAuthCookie(string token)
-    {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddHours(1)
-        };
-
-        Response.Cookies.Append("AuthToken", token, cookieOptions);
-    }
-
     private string? GetTokenFromCookie()
     {
-        return Request.Cookies["AuthToken"];
+        return Request.Cookies["ACCESS_TOKEN"];
     }
 }

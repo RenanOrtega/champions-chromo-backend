@@ -1,10 +1,10 @@
-﻿using ChampionsChromo.Application.Albums.Commands.UpdateAlbum;
-using ChampionsChromo.Application.Schools.Commands.CreateSchool;
+﻿using ChampionsChromo.Application.Schools.Commands.CreateSchool;
 using ChampionsChromo.Application.Schools.Commands.DeleteSchool;
 using ChampionsChromo.Application.Schools.Commands.UpdateSchool;
 using ChampionsChromo.Application.Schools.Queries.GetSchoolById;
 using ChampionsChromo.Application.Schools.Queries.GetSchools;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChampionsChromo.Api.Controllers;
@@ -16,6 +16,7 @@ public class SchoolController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create(CreateSchoolCommand command)
     {
         var result = await _mediator.Send(command);
@@ -46,6 +47,7 @@ public class SchoolController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         var result = await _mediator.Send(new DeleteSchoolCommand(id));
@@ -57,6 +59,7 @@ public class SchoolController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id}")]
+    [Authorize]
     public async Task<IActionResult> Update(UpdateSchoolCommand command, [FromRoute] string id)
     {
         command.Id = id;

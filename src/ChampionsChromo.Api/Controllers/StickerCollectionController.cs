@@ -7,6 +7,7 @@ using ChampionsChromo.Application.StickerCollection.Queries.GetUserAlbums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ChampionsChromo.Core.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ChampionsChromo.Api.Controllers;
 
@@ -17,6 +18,7 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Create(CreateUserAlbumCommand command)
     {
         var result = await _mediator.Send(command);
@@ -55,6 +57,7 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/add")]
+    [Authorize]
     public async Task<IActionResult> AddSticker(
         string albumId,
         int stickerNumber,
@@ -69,6 +72,7 @@ public class StickerCollectionController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("albumId/{albumId}/stickerNumber/{stickerNumber}/stickerType/{stickerType}/remove")]
+    [Authorize]
     public async Task<IActionResult> RemoveSticker(
         string albumId,
         int stickerNumber,

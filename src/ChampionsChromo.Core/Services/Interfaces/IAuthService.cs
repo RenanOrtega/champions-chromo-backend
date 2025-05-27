@@ -5,11 +5,13 @@ namespace ChampionsChromo.Core.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<AuthResult> LoginAsync(string username, string password);
-    Task<AuthResult> RegisterAsync(string username, string password);
-    Task<bool> ValidateTokenAsync(string token);
+    Task RegisterAsync(string username, string password);
+    Task LoginAsync(string username, string password);
+    Task RefreshTokenAsync(string? refreshToken);
+    (string, DateTime) GenerateJwtToken(User user);
+    string GenerateRefreshToken();
+    void WriteAuthTokenAsHttpOnlyCookie(string cookieName, string token, DateTime expiration);
     Task<User?> GetCurrentUserAsync(string token);
-    string GenerateJwtToken(User user);
     bool VerifyPassword(string password, string hash);
     string HashPassword(string password);
 }

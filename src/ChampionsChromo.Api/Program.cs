@@ -4,6 +4,7 @@ using ChampionsChromo.Api.Middlewares;
 using ChampionsChromo.Application;
 using ChampionsChromo.Core.Clients.Interfaces;
 using ChampionsChromo.Core.Extensions;
+using ChampionsChromo.Core.Options;
 using ChampionsChromo.Infrastructure;
 using ChampionsChromo.Infrastructure.Clients;
 using ChampionsChromo.Infrastructure.Configurations;
@@ -17,29 +18,43 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-var jwtKey = builder.Configuration["Jwt:Key"]!;
-var key = Encoding.ASCII.GetBytes(jwtKey);
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection(JwtOptions.JwtOptionsKey)
+);
 
-builder.Services.AddAuthentication(x =>
+builder.Services.AddAuthentication(opt =>
 {
-    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(x =>
+    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    opt.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
 {
-    x.RequireHttpsMetadata = false;
-    x.SaveToken = true;
-    x.TokenValidationParameters = new TokenValidationParameters
+    var jwtOptions = builder.Configuration
+        .GetSection(JwtOptions.JwtOptionsKey)
+        .Get<JwtOptions>() ?? throw new ArgumentException(nameof(JwtOptions));
+
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtOptions.Issuer,
+        ValidAudience = jwtOptions.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["ACCESS_TOKEN"];
+            return Task.CompletedTask;
+        }
     };
 });
+
+builder.Services.AddAuthorization();
 
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings")
@@ -72,7 +87,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll", builder =>
     {
         builder
-            .WithOrigins("http://localhost:5173", "https://www.albumdefigurinha.com.br", "https://admin.albumdefigurinha.com.br")
+            .WithOrigins(
+                "http://localhost:5173",
+                "https://www.albumdefigurinha.com.br",
+                "https://admin.albumdefigurinha.com.br",
+                "http://localhost:5174")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -88,7 +107,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-app.UseMiddleware<JwtCookieMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

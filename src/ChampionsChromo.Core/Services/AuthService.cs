@@ -1,137 +1,112 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using ChampionsChromo.Core.Entities;
-using ChampionsChromo.Core.Models;
+using ChampionsChromo.Core.Options;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using ChampionsChromo.Core.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ChampionsChromo.Core.Services;
 
-public class AuthService(IUserRepository userRepository, IConfiguration configuration) : IAuthService
+public class AuthService(
+    IUserRepository userRepository,
+    IOptions<JwtOptions> jwtOptions,
+    IHttpContextAccessor httpContextAccessor) : IAuthService
 {
     private readonly IUserRepository _userRepository = userRepository;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    public async Task<AuthResult> LoginAsync(string username, string password)
+    public async Task LoginAsync(string username, string password)
     {
-        try
+        var user = await _userRepository.GetByUsernameAsync(username);
+
+        if (user is null || !VerifyPassword(password, user.PasswordHash))
         {
-            var user = await _userRepository.GetByUsernameAsync(username);
-
-            if (user == null)
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Usuário não encontrado"
-                };
-            }
-
-            if (!VerifyPassword(password, user.PasswordHash))
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Senha incorreta"
-                };
-            }
-
-            // Atualiza último login
-            user.LastLoginAt = DateTime.UtcNow;
-            await _userRepository.UpdateAsync(user);
-
-            var token = GenerateJwtToken(user);
-
-            return new AuthResult
-            {
-                Success = true,
-                Message = "Login realizado com sucesso",
-                Token = token,
-                User = user
-            };
+            throw new UnauthorizedAccessException("Falha no login.");
         }
-        catch (Exception ex)
-        {
-            return new AuthResult
-            {
-                Success = false,
-                Message = $"Erro interno: {ex.Message}"
-            };
-        }
+
+        var (jwtToken, expirationDateInUtc) = GenerateJwtToken(user);
+        var refreshToken = GenerateRefreshToken();
+        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7);
+
+        user.LastLoginAt = DateTime.UtcNow;
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
+
+        await _userRepository.UpdateAsync(user);
+
+        WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
+        WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", refreshToken, refreshTokenExpirationDateInUtc);
     }
 
-    public async Task<AuthResult> RegisterAsync(string username, string password)
+    public async Task RefreshTokenAsync(string? refreshToken)
     {
-        try
+        if (string.IsNullOrEmpty(refreshToken))
         {
-            if (await _userRepository.ExistsAsync(username))
-            {
-                return new AuthResult
-                {
-                    Success = false,
-                    Message = "Usuário já existe"
-                };
-            }
-
-            var user = new User
-            {
-                Username = username,
-                PasswordHash = HashPassword(password),
-                Roles = ["user"],
-                CreatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
-
-            await _userRepository.CreateAsync(user);
-
-            var token = GenerateJwtToken(user);
-
-            return new AuthResult
-            {
-                Success = true,
-                Message = "Usuário criado com sucesso",
-                Token = token,
-                User = user
-            };
+            throw new UnauthorizedAccessException();
         }
-        catch (Exception ex)
+
+        var user = await _userRepository.GetByRefreshToken(refreshToken);
+        if (user is null)
         {
-            return new AuthResult
-            {
-                Success = false,
-                Message = $"Erro interno: {ex.Message}"
-            };
+            throw new UnauthorizedAccessException();
         }
+
+        if (user.RefreshTokenExpiresAtUtc < DateTime.UtcNow)
+        {
+            throw new UnauthorizedAccessException();
+
+        }
+
+        var (jwtToken, expirationDateInUtc) = GenerateJwtToken(user);
+        var newRefreshToken = GenerateRefreshToken();
+        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7);
+
+        user.LastLoginAt = DateTime.UtcNow;
+        user.RefreshToken = newRefreshToken;
+        user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
+
+        await _userRepository.UpdateAsync(user);
+
+        WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
+        WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", newRefreshToken, refreshTokenExpirationDateInUtc);
     }
 
-    public async Task<bool> ValidateTokenAsync(string token)
+    public async Task RegisterAsync(string username, string password)
     {
-        try
+        if (await _userRepository.ExistsAsync(username))
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!);
-
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
-                ValidIssuer = _configuration["Jwt:Issuer"],
-                ValidateAudience = true,
-                ValidAudience = _configuration["Jwt:Audience"],
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            }, out SecurityToken validatedToken);
-
-            return true;
+            throw new Exception("Usuário já existe.");
         }
-        catch
+
+        var user = new User
         {
-            return false;
-        }
+            Username = username,
+            PasswordHash = HashPassword(password),
+            Roles = ["user"],
+            CreatedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+
+        await _userRepository.CreateAsync(user);
+
+        var (jwtToken, expirationDateInUtc) = GenerateJwtToken(user);
+        var refreshToken = GenerateRefreshToken();
+        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7);
+
+        user.LastLoginAt = DateTime.UtcNow;
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
+
+        await _userRepository.UpdateAsync(user);
+
+        WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
+        WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", refreshToken, refreshTokenExpirationDateInUtc);
     }
 
     public async Task<User?> GetCurrentUserAsync(string token)
@@ -141,7 +116,7 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
             var tokenHandler = new JwtSecurityTokenHandler();
             var jsonToken = tokenHandler.ReadJwtToken(token);
 
-            var userIdClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == "id");
+            var userIdClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub);
             if (userIdClaim == null) return null;
 
             return await _userRepository.GetByIdAsync(userIdClaim.Value);
@@ -152,33 +127,52 @@ public class AuthService(IUserRepository userRepository, IConfiguration configur
         }
     }
 
-    public string GenerateJwtToken(User user)
+    public (string, DateTime) GenerateJwtToken(User user)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]!);
+        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
 
-        var claims = new List<Claim>
+        var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>()
         {
-            new("id", user.Id),
-            new("username", user.Username),
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Name, user.Username),
+            new(ClaimTypes.NameIdentifier, user.Username)
         };
 
-        // Adiciona roles como claims
-        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationTimeInMinutes);
 
-        var tokenDescriptor = new SecurityTokenDescriptor
+        var token = new JwtSecurityToken(
+            _jwtOptions.Issuer,
+            _jwtOptions.Audience,
+            claims,
+            expires: expires,
+            signingCredentials: credentials);
+
+        var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+        return (jwtToken, expires);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    public void WriteAuthTokenAsHttpOnlyCookie(string cookieName, string token, DateTime expiration)
+    {
+        _httpContextAccessor.HttpContext.Response.Cookies.Append(cookieName, token, new CookieOptions
         {
-            Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddDays(7), // Token válido por 7 dias
-            Issuer = _configuration["Jwt:Issuer"],
-            Audience = _configuration["Jwt:Audience"],
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature)
-        };
-
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+            HttpOnly = true,
+            Expires = expiration,
+            IsEssential = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+        });
     }
 
     public bool VerifyPassword(string password, string hash)

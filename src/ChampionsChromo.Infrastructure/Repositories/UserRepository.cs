@@ -49,4 +49,11 @@ public class UserRepository(MongoDbContext context) : Repository<User>(context),
             .CountDocumentsAsync(u => u.Username == username && u.IsActive);
         return count > 0;
     }
+
+    public async Task<User?> GetByRefreshToken(string refreshToken)
+    {
+        return await _collection
+            .Find(u => u.RefreshToken == refreshToken && u.IsActive)
+            .FirstOrDefaultAsync();
+    }
 }

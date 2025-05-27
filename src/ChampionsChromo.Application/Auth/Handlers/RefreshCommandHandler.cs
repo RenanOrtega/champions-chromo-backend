@@ -5,13 +5,13 @@ using MediatR;
 
 namespace ChampionsChromo.Application.Auth.Handlers;
 
-public class RegisterCommandHandler(IAuthService authService) : IRequestHandler<RegisterCommand, Result>
+public class RefreshCommandHandler(IAuthService authService) : IRequestHandler<RefreshCommand, Result>
 {
     private readonly IAuthService _authService = authService;
 
-    public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RefreshCommand request, CancellationToken cancellationToken)
     {
-        await _authService.RegisterAsync(request.Username, request.Password);
+        await _authService.RefreshTokenAsync(request.RefreshToken);
         return Result.Success();
     }
 }

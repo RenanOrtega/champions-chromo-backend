@@ -36,14 +36,12 @@ public class JwtCookieMiddleware(RequestDelegate next, IConfiguration configurat
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var userId = jwtToken.Claims.First(x => x.Type == "id").Value;
 
-                // Adiciona as claims ao contexto
                 var claims = jwtToken.Claims.ToList();
                 var identity = new ClaimsIdentity(claims, "jwt");
                 context.User = new ClaimsPrincipal(identity);
             }
             catch
             {
-                // Token inválido - remove o cookie
                 context.Response.Cookies.Delete("AuthToken");
             }
         }
