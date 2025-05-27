@@ -13,6 +13,6 @@ public static class ServiceCollectionExtension
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
-        return services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
+        return services.AddScoped<IAuthService, AuthService>();
     }
 }

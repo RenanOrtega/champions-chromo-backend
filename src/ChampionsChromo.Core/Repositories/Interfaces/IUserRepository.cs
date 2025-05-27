@@ -4,5 +4,10 @@ namespace ChampionsChromo.Core.Repositories.Interfaces;
 
 public interface IUserRepository : IRepository<User>
 {
-    Task<User> GetByFirebaseIdAsync(string subject);
+    Task<User?> GetByUsernameAsync(string username);
+    new Task<User?> GetByIdAsync(string id);
+    Task<User> CreateAsync(User user);
+    Task<User> UpdateAsync(User user);
+    new Task<bool> DeleteAsync(string id);
+    Task<bool> ExistsAsync(string username);
 }
