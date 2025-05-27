@@ -72,7 +72,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll", builder =>
     {
         builder
-            .WithOrigins("http://localhost:5173", "https://www.albumdefigurinha.com.br")
+            .WithOrigins("http://localhost:5173", "https://www.albumdefigurinha.com.br", "https://admin.albumdefigurinha.com.br")
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
