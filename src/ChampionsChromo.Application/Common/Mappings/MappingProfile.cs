@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChampionsChromo.Application.Albums.Queries;
+using ChampionsChromo.Application.Cupoms.Queries;
 using ChampionsChromo.Application.Schools.Queries;
 using ChampionsChromo.Application.StickerCollection.Queries;
 using ChampionsChromo.Core.Entities;
@@ -16,5 +17,7 @@ public class MappingProfile : Profile
 
         CreateMap<UserAlbum, UserAlbumDto>();
         CreateMap<UserAlbumEntry, UserAlbumEntryDto>();
+
+        CreateMap<Cupom, CupomDto>();
     }
 }
