@@ -8,6 +8,11 @@ namespace ChampionsChromo.Infrastructure.Repositories;
 
 public class CupomRepository(MongoDbContext context) : Repository<Cupom>(context), ICupomRepository
 {
+    public async Task<Cupom> FindByCodeAsync(string code)
+    {
+        return await _collection.Find(c => c.Code == code && c.IsActive).FirstOrDefaultAsync();
+    }
+
     public async Task UpdateAsync(string Id, UpdateCupomDto updateAlbumDto)
     {
         var filter = Builders<Cupom>.Filter.Eq(a => a.Id, Id);

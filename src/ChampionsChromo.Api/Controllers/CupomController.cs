@@ -3,6 +3,7 @@ using ChampionsChromo.Application.Cupoms.Commands.DeleteCupom;
 using ChampionsChromo.Application.Cupoms.Commands.UpdateCupom;
 using ChampionsChromo.Application.Cupoms.Queries.GetCupomById;
 using ChampionsChromo.Application.Cupoms.Queries.GetCupoms;
+using ChampionsChromo.Application.Cupoms.Queries.ValidateCoupon;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -69,5 +70,16 @@ public class CupomController(IMediator mediator) : ControllerBase
             return Ok(result);
 
         return BadRequest(result.Error);
+    }
+
+    [HttpGet("validate/{code}")]
+    public async Task<IActionResult> Validate([FromRoute] string code)
+    {
+        var result = await _mediator.Send(new ValidateCouponQuery(code));
+        
+        if (result.Coupon is not null)
+            return Ok(result);
+        
+        return BadRequest(result);
     }
 }

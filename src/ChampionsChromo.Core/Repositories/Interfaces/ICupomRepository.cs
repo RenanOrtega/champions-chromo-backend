@@ -6,4 +6,6 @@ namespace ChampionsChromo.Core.Repositories.Interfaces;
 public interface ICupomRepository : IRepository<Cupom>
 {
     Task UpdateAsync(string Id, UpdateCupomDto updateCupomDto);
+    Task<Cupom> FindByCodeAsync(string code);
+
 }
