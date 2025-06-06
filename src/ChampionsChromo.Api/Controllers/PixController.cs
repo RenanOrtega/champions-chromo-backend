@@ -1,4 +1,5 @@
-﻿using ChampionsChromo.Application.Pix.Commands.CreateOrder;
+﻿using ChampionsChromo.Application.Payment.Commands.CreatePaymentIntent;
+using ChampionsChromo.Application.Pix.Commands.CreateOrder;
 using ChampionsChromo.Application.Pix.Commands.UpdateOrderStatus;
 using ChampionsChromo.Application.Pix.Queries.GetPixOrderStatus;
 using ChampionsChromo.Core.Models;

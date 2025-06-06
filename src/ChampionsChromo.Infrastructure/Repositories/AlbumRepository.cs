@@ -29,4 +29,11 @@ public class AlbumRepository(MongoDbContext context) : Repository<Album>(context
 
         await _collection.UpdateOneAsync(filter, update);
     }
+
+    public async Task UpdateImageAsync(string Id, string imageUrl)
+    {
+        var filter = Builders<Album>.Filter.Eq(a => a.Id, Id);
+        var update = Builders<Album>.Update.Set(a => a.CoverImage, imageUrl);
+        await _collection.UpdateOneAsync(filter, update);
+    }
 }

@@ -1,4 +1,4 @@
-﻿namespace ChampionsChromo.Application.Albums.Queries;
+﻿namespace ChampionsChromo.Core.Models;
 
 public class AlbumDto
 {

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChampionsChromo.Application.Common.Models;
+using ChampionsChromo.Core.Models;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using MediatR;
 

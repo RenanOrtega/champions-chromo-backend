@@ -13,6 +13,8 @@ public static class ServiceCollectionExtension
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
-        return services.AddScoped<IAuthService, AuthService>();
+        return services
+            .AddScoped<IAuthService, AuthService>()
+            .AddScoped<IStripeService, StripeService>();
     }
 }

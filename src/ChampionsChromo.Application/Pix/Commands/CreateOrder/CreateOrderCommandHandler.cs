@@ -1,7 +1,6 @@
 ﻿using ChampionsChromo.Application.Common.Models;
 using ChampionsChromo.Core.Clients.Interfaces;
 using ChampionsChromo.Core.Entities;
-using ChampionsChromo.Core.Entities.Pix;
 using ChampionsChromo.Core.Models;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using MediatR;
@@ -15,18 +14,17 @@ public class CreateOrderCommandHandler(IPixRepository pixRepository, IAbacatePay
 
     public async Task<Result<GeneratePixAbacatePayResponse>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        var generatePixRequest = new GeneratePixAbacatePayRequest 
+        var generatePixRequest = new GeneratePixAbacatePayRequest
         {
-            Amount = request.Payment.Amount,
-            Customer = request.Customer, 
-            ExpiresIn = request.ExpiresIn, 
-            Description = request.Description 
+            Customer = request.Customer,
+            ExpiresIn = request.ExpiresIn,
+            Description = request.Description
         };
-        
+
         var response = await _abacatePayClient.GeneratePix("/v1/pixQrCode/create", generatePixRequest, cancellationToken);
         if (response is null)
             return Result<GeneratePixAbacatePayResponse>.Failure("Failed to generate pix QR code.");
-        
+
         if (response.Data is null)
             return Result<GeneratePixAbacatePayResponse>.Failure("Failed to generate pix QR code: No data returned.");
 
@@ -35,7 +33,6 @@ public class CreateOrderCommandHandler(IPixRepository pixRepository, IAbacatePay
             Customer = request.Customer,
             Address = request.Address,
             IntegrationId = response.Data.Id,
-            Payment = new Payment { Amount = generatePixRequest.Amount, Fee = response.Data.PlatformFee},
             Status = response.Data.Status,
         };
 

@@ -7,4 +7,6 @@ public interface IAlbumRepository : IRepository<Album>
 {
     Task<IEnumerable<Album>> FindBySchoolIdAsync(string schoolId);
     Task UpdateAsync(string Id, UpdateAlbumDto updateAlbumDto);
+
+    Task UpdateImageAsync(string Id, string imageUrl);
 }
