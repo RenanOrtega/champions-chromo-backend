@@ -19,5 +19,8 @@ public class MappingProfile : Profile
         CreateMap<UserAlbumEntry, UserAlbumEntryDto>();
 
         CreateMap<Cupom, CupomDto>();
+        CreateMap<OrderSummary, OrderSummaryDto>();
+        CreateMap<AlbumOrder, AlbumOrderDto>();
+        CreateMap<StickerOrderItem, StickersOrderDto>();
     }
 }

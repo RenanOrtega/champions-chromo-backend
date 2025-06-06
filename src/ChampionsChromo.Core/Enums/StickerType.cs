@@ -1,9 +1,10 @@
-﻿namespace ChampionsChromo.Core.Enums;
+﻿using System.Text.Json.Serialization;
+
+namespace ChampionsChromo.Core.Enums;
 
 public enum StickerType
 {
-    Comum,
-    Quadro,
-    Legends,
-    A4
+    Common,
+    Legend,
+    a4
 }
