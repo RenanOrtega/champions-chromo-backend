@@ -21,7 +21,7 @@ namespace ChampionsChromo.Api.Controllers
             var result = await _mediator.Send(command);
 
             if (result.IsSuccess)
-                return Ok(result);
+                return Ok(result.Value);
 
             return BadRequest(result.Error);
         }

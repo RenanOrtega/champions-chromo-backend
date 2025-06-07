@@ -1,10 +1,11 @@
 ﻿using ChampionsChromo.Application.Common.Models;
 using ChampionsChromo.Core.Enums;
+using ChampionsChromo.Core.Models;
 using MediatR;
 
 namespace ChampionsChromo.Application.Orders.Commands.CreateOrder;
 
-public class CreateOrderCommand : IRequest<Result>
+public class CreateOrderCommand : IRequest<Result<CreateOrderSummaryDto>>
 {
     public IList<CreateAlbumOrderCommand> Albums { get; set; }
     public int PriceTotal { get; set; }
