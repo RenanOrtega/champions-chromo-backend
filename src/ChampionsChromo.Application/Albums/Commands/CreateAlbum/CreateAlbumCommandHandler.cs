@@ -21,7 +21,10 @@ public class CreateAlbumCommandHandler(IAlbumRepository albumRepository) : IRequ
             TotalStickers = request.TotalStickers,
             HasA4 = request.HasA4,
             HasCommon = request.HasCommon,
-            HasLegend = request.HasLegend
+            HasLegend = request.HasLegend,
+            A4Price = request.A4Price,
+            CommonPrice = request.CommonPrice,
+            LegendPrice = request.LegendPrice
         };
 
         try

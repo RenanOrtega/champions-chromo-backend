@@ -20,7 +20,10 @@ public class UpdateAlbumCommandHandler(IAlbumRepository albumRepository) : IRequ
             HasCommon = request.HasCommon,
             HasLegend = request.HasLegend,
             HasA4 = request.HasA4,
-            TotalStickers = request.TotalStickers
+            TotalStickers = request.TotalStickers,
+            CommonPrice = request.CommonPrice,
+            A4Price = request.A4Price,
+            LegendPrice = request.LegendPrice
         };
 
         try

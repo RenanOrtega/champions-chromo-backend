@@ -24,6 +24,9 @@ public class AlbumRepository(MongoDbContext context) : Repository<Album>(context
             .Set(a => a.HasA4, updateAlbumDto.HasA4)
             .Set(a => a.HasCommon, updateAlbumDto.HasCommon)
             .Set(a => a.HasLegend, updateAlbumDto.HasLegend)
+            .Set(a => a.CommonPrice, updateAlbumDto.CommonPrice)
+            .Set(a => a.LegendPrice, updateAlbumDto.LegendPrice)
+            .Set(a => a.A4Price, updateAlbumDto.A4Price)
             .Set(a => a.TotalStickers, updateAlbumDto.TotalStickers)
             .Set(a => a.UpdatedAt, DateTime.UtcNow);
 
