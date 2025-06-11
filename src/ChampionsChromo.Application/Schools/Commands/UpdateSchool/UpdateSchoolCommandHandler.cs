@@ -16,7 +16,9 @@ public class UpdateSchoolCommandHandler(ISchoolRepository schoolRepository) : IR
         {
             Name = request.Name,
             City = request.City,
-            State = request.State
+            State = request.State,
+            Warning = request.Warning,
+            BgWarningColor = request.BgWarningColor
         };
 
         try

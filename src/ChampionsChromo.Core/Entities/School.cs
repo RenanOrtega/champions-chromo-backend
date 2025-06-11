@@ -8,4 +8,6 @@ public class School : Entity
     public string Address { get; init; } = string.Empty;
     public string City { get; init; } = string.Empty;
     public string State { get; init; } = string.Empty;
+    public string Warning { get; set; } = string.Empty;
+    public string BgWarningColor { get; set; } = string.Empty;
 }

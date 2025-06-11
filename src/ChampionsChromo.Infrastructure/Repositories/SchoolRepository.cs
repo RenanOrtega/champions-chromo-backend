@@ -15,7 +15,9 @@ public class SchoolRepository(MongoDbContext context) : Repository<School>(conte
         var update = Builders<School>.Update
             .Set(a => a.Name, updateSchoolDto.Name)
             .Set(a => a.State, updateSchoolDto.State)
-            .Set(a => a.City, updateSchoolDto.City);
+            .Set(a => a.City, updateSchoolDto.City)
+            .Set(a => a.Warning, updateSchoolDto.Warning)
+            .Set(a => a.BgWarningColor, updateSchoolDto.BgWarningColor);
 
         await _collection.UpdateOneAsync(filter, update);
     }

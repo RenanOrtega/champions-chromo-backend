@@ -19,6 +19,8 @@ public class CreateSchoolCommandHandler(ISchoolRepository schoolRepository) : IR
             Email = request.Email,
             Phone = request.Phone,
             State = request.State,
+            BgWarningColor = request.BgWarningColor,
+            Warning = request.Warning
         };
 
         try
