@@ -20,7 +20,8 @@ public class CreateSchoolCommandHandler(ISchoolRepository schoolRepository) : IR
             Phone = request.Phone,
             State = request.State,
             BgWarningColor = request.BgWarningColor,
-            Warning = request.Warning
+            Warning = request.Warning,
+            ShippingCost = request.ShippingCost
         };
 
         try
