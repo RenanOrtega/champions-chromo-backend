@@ -7,6 +7,7 @@
         public string State { get; set; } = string.Empty;
         public string Warning { get; set; } = string.Empty;
         public string BgWarningColor { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
         public int ShippingCost { get; set; }
 
     }

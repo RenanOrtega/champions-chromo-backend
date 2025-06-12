@@ -19,7 +19,8 @@ public class UpdateSchoolCommandHandler(ISchoolRepository schoolRepository) : IR
             State = request.State,
             Warning = request.Warning,
             BgWarningColor = request.BgWarningColor,
-            ShippingCost = request.ShippingCost  
+            ShippingCost = request.ShippingCost,
+            ImageUrl = request.ImageUrl
         };
 
         try

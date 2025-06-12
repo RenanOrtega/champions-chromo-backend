@@ -21,7 +21,8 @@ public class CreateSchoolCommandHandler(ISchoolRepository schoolRepository) : IR
             State = request.State,
             BgWarningColor = request.BgWarningColor,
             Warning = request.Warning,
-            ShippingCost = request.ShippingCost
+            ShippingCost = request.ShippingCost,
+            ImageUrl = request.ImageUrl
         };
 
         try
