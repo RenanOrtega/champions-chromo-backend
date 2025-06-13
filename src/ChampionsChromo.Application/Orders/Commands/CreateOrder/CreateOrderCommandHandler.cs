@@ -23,8 +23,24 @@ public class CreateOrderCommandHandler(IOrderRepository orderRepository) : IRequ
                     Type = sticker.Type,
                     Number = sticker.Number,
                     Quantity = sticker.Quantity
-                })]
+                })],
+                
             })],
+            Customer = new Customer
+            {
+                Name = request.Customer?.Name ?? string.Empty,
+                Email = request.Customer?.Email ?? string.Empty,
+                Address = request.Customer?.Address is not null ? new CustomerAddress
+                {
+                    Street = request.Customer.Address.Street,
+                    Number = request.Customer.Address.Number,
+                    Neighborhood = request.Customer.Address.Neighborhood,
+                    PostalCode = request.Customer.Address.PostalCode,
+                    City = request.Customer.Address.City,
+                    Complement = request.Customer.Address.Complement,
+                    State = request.Customer.Address.State
+                } : null
+            },
             PriceTotal = request.PriceTotal
         };
 
