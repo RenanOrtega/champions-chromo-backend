@@ -14,9 +14,9 @@ public class DashboardController(IMediator mediator) : ControllerBase
 
     [HttpGet("metrics")]
     [Authorize]
-    public async Task<IActionResult> GetMetrics()
+    public async Task<IActionResult> GetMetrics([FromQuery] int daysBack = 30)
     {
-        var result = await _mediator.Send(new GetMetricsQuery());
+        var result = await _mediator.Send(new GetMetricsQuery { DaysBack = daysBack });
 
         if (result.IsSuccess)
             return Ok(result.Value);

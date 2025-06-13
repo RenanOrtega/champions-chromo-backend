@@ -1,7 +1,10 @@
-﻿using ChampionsChromo.Application.Albums.Queries;
-using ChampionsChromo.Application.Common.Models;
+﻿using ChampionsChromo.Application.Common.Models;
+using ChampionsChromo.Core.Models;
 using MediatR;
 
 namespace ChampionsChromo.Application.Dashboard.Queries.GetMetrics;
 
-public record GetMetricsQuery : IRequest<Result<MetricsDto>>;
+public class GetMetricsQuery : IRequest<Result<MetricsDto>>
+{
+    public int DaysBack { get; set; } = 30;
+}

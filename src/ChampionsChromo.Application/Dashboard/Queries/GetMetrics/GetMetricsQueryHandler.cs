@@ -1,22 +1,33 @@
 ﻿using AutoMapper;
-using ChampionsChromo.Application.Albums.Queries;
 using ChampionsChromo.Application.Common.Models;
+using ChampionsChromo.Core.Models;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using MediatR;
 
 namespace ChampionsChromo.Application.Dashboard.Queries.GetMetrics;
 
-public class GetMetricsQueryHandler(IAlbumRepository albumRepository, ISchoolRepository schoolRepository, IMapper mapper) : IRequestHandler<GetMetricsQuery, Result<MetricsDto>>
+public class GetMetricsQueryHandler(IAlbumRepository albumRepository, ISchoolRepository schoolRepository, IMapper mapper, IOrderRepository orderRepository) : IRequestHandler<GetMetricsQuery, Result<MetricsDto>>
 {
     private readonly IAlbumRepository _albumRepository = albumRepository;
     private readonly ISchoolRepository _schoolRepository = schoolRepository;
+    private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly IMapper _mapper = mapper;
 
     public async Task<Result<MetricsDto>> Handle(GetMetricsQuery request, CancellationToken cancellationToken)
     {
-        var albumsCount = await _albumRepository.CountAsync();
-        var schoolsCount = await _schoolRepository.CountAsync();
+        try
+        {
+            var metrics = await _orderRepository.GetDashboardMetricsAsync(request.DaysBack);
 
-        return Result<MetricsDto>.Success(new MetricsDto { AlbumsCount = albumsCount, SchoolsCount = schoolsCount });
+            // Manter as métricas existentes
+            metrics.AlbumsCount = await _albumRepository.CountAsync();
+            metrics.SchoolsCount = await _schoolRepository.CountAsync();
+
+            return Result<MetricsDto>.Success(metrics);
+        }
+        catch (Exception ex)
+        {
+            return Result<MetricsDto>.Failure($"Erro ao obter métricas: {ex.Message}");
+        }
     }
 }

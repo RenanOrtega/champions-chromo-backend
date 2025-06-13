@@ -6,4 +6,5 @@ namespace ChampionsChromo.Core.Repositories.Interfaces;
 public interface IOrderRepository : IRepository<OrderSummary>
 {
     Task UpdateAsync(string Id, UpdateOrderDto updateOrderDto);
+    Task<MetricsDto> GetDashboardMetricsAsync(int daysBack = 30);
 }
