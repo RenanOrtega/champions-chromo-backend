@@ -7,9 +7,9 @@
         public bool HasCommon { get; set; }
         public bool HasLegend { get; set; }
         public bool HasA4 { get; set; }
-        public int CommonPrice { get; set; }
-        public int LegendPrice { get; set; }
-        public int A4Price { get; set; }
+        public decimal CommonPrice { get; set; }
+        public decimal LegendPrice { get; set; }
+        public decimal A4Price { get; set; }
         public int TotalStickers { get; set; }
     }
 }

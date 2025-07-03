@@ -4,7 +4,6 @@ using ChampionsChromo.Application.Albums.Commands.UpdateAlbum;
 using ChampionsChromo.Application.Albums.Queries.GetAlbumById;
 using ChampionsChromo.Application.Albums.Queries.GetAlbumBySchoolId;
 using ChampionsChromo.Application.Albums.Queries.GetAlbums;
-using ChampionsChromo.Application.Schools.Commands.UpdateSchool;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

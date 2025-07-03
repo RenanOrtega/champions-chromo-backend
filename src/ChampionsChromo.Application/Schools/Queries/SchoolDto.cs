@@ -12,5 +12,5 @@ public class SchoolDto
     public string State { get; set; } = string.Empty;
     public string Warning { get; set; } = string.Empty;
     public string BgWarningColor { get; set; } = string.Empty;
-    public int ShippingCost { get; set; }
+    public decimal ShippingCost { get; set; }
 }
