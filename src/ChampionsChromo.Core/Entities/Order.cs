@@ -13,6 +13,7 @@ public class AlbumOrder
 {
     public string AlbumId { get; set; } = string.Empty;
     public string SchoolId { get; set; } = string.Empty;
+    public string AlbumName { get; set; } = string.Empty;
     public IList<StickerOrderItem> Stickers { get; set; } = [];
 }
 

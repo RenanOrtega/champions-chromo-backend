@@ -142,6 +142,17 @@ public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(
         };
     }
 
+    public async Task<IEnumerable<OrderSummary>> GetAllOrderedByCreatedAsync(bool descending = true)
+    {
+        var find = _collection.Find(_ => true);
+
+        var sorted = descending
+            ? find.SortByDescending(x => x.CreatedAt)
+            : find.SortBy(x => x.CreatedAt);
+
+        return await sorted.ToListAsync();
+    }
+
     public async Task UpdateAsync(string Id, UpdateOrderDto updateOrderDto)
     {
         var filter = Builders<OrderSummary>.Filter.Eq(a => a.Id, Id);

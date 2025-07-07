@@ -7,4 +7,5 @@ public interface IOrderRepository : IRepository<OrderSummary>
 {
     Task UpdateAsync(string Id, UpdateOrderDto updateOrderDto);
     Task<MetricsDto> GetDashboardMetricsAsync(int daysBack = 30);
+    Task<IEnumerable<OrderSummary>> GetAllOrderedByCreatedAsync(bool descending = true);
 }

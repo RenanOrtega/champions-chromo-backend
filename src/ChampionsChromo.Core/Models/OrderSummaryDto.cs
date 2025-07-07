@@ -21,6 +21,7 @@ public class SchoolOrderDto
 public class AlbumOrderDto
 {
     public string AlbumId { get; set; } = string.Empty;
+    public string AlbumName { get; set; } = string.Empty;
     public IList<StickersOrderDto> Stickers { get; set; } = [];
 }
 

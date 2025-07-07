@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using ChampionsChromo.Core.Entities;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using ChampionsChromo.Infrastructure.Context;
 using MongoDB.Bson;

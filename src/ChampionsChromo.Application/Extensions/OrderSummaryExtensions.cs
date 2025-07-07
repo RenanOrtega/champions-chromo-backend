@@ -5,23 +5,18 @@ namespace ChampionsChromo.Application.Extensions;
 
 public static class OrderSummaryExtensions
 {
-
-    public static OrderSummaryDto ToDto(this OrderSummary order)
+    public static OrderSummaryDto ToDto(this OrderSummary order, bool withStickers = false)
     {
         var schools = order.Albums
             .GroupBy(a => a.SchoolId)
-            .Select(static schoolGroup => new SchoolOrderDto
+            .Select(schoolGroup => new SchoolOrderDto
             {
                 SchoolId = schoolGroup.Key,
                 Albums = [.. schoolGroup.Select(album => new AlbumOrderDto
                 {
                     AlbumId = album.AlbumId,
-                    Stickers = [.. album.Stickers.Select(sticker => new StickersOrderDto
-                    {
-                        Type = sticker.Type,
-                        Number = sticker.Number,
-                        Quantity = sticker.Quantity
-                    })]
+                    AlbumName = album.AlbumName,
+                    Stickers = GetStickers(album, withStickers)
                 })],
             }).ToList();
 
@@ -39,7 +34,6 @@ public static class OrderSummaryExtensions
                 Complement = order.Customer.Address.Complement,
                 City = order.Customer.Address.City
             } : null
-
         };
 
         return new OrderSummaryDto
@@ -51,5 +45,17 @@ public static class OrderSummaryExtensions
             TotalStickers = order.Albums.SelectMany(a => a.Stickers).Sum(s => s.Quantity),
             PriceTotal = order.PriceTotal
         };
+    }
+
+    private static List<StickersOrderDto> GetStickers(AlbumOrder album, bool withStickers)
+    {
+        return withStickers
+            ? [.. album.Stickers.Select(sticker => new StickersOrderDto
+            {
+                Type = sticker.Type,
+                Number = sticker.Number,
+                Quantity = sticker.Quantity
+            })]
+            : [];
     }
 }

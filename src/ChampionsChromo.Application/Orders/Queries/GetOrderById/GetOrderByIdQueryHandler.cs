@@ -19,6 +19,6 @@ public class GetOrderByIdQueryHandler(IOrderRepository orderRepository, IMapper 
         if (order == null)
             return Result<OrderSummaryDto>.Failure($"Order with ID {request.Id} not found.");
 
-        return Result<OrderSummaryDto>.Success(order.ToDto());
+        return Result<OrderSummaryDto>.Success(order.ToDto(withStickers: true));
     }
 }

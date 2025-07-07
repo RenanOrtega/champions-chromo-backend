@@ -9,10 +9,9 @@ namespace ChampionsChromo.Application.Orders.Queries.GetOrders;
 public class GetOrdersQueryHandler(IOrderRepository orderRepository) : IRequestHandler<GetOrdersQuery, Result<IEnumerable<OrderSummaryDto>>>
 {
     private readonly IOrderRepository _orderRepository = orderRepository;
-
     public async Task<Result<IEnumerable<OrderSummaryDto>>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
     {
-        var orders = await _orderRepository.GetAllAsync();
+        var orders = await _orderRepository.GetAllOrderedByCreatedAsync();
 
         return Result<IEnumerable<OrderSummaryDto>>.Success(orders.Select(x => x.ToDto()));
     }
