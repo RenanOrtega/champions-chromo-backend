@@ -18,6 +18,7 @@ public class CreateOrderCommandHandler(IOrderRepository orderRepository) : IRequ
             {
                 AlbumId = album.AlbumId,
                 SchoolId = album.SchoolId,
+                AlbumName = album.AlbumName,
                 Stickers = [.. album.Stickers.Select(sticker => new StickerOrderItem
                 {
                     Type = sticker.Type,

@@ -15,6 +15,7 @@ public class CreateOrderCommand : IRequest<Result<CreateOrderSummaryDto>>
 public class CreateAlbumOrderCommand
 {
     public string AlbumId { get; set; } = string.Empty;
+    public string AlbumName { get; set; } = string.Empty;
     public string SchoolId { get; set; } = string.Empty;
     public IList<CreateStickerOrderItemCommand> Stickers { get; set; } = [];
 }
