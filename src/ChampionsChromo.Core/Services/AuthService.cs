@@ -172,6 +172,7 @@ public class AuthService(
             IsEssential = true,
             Secure = true,
             SameSite = SameSiteMode.None,
+            Path = "/",
         });
     }
 
