@@ -9,7 +9,7 @@ public class OrderSummaryDto
     public CustomerDto? Customer { get; set; }
     public int TotalAlbums { get; set; }
     public int TotalStickers { get; set; }
-    public int PriceTotal { get; set; }
+    public decimal PriceTotal { get; set; }
 }
 
 public class SchoolOrderDto
