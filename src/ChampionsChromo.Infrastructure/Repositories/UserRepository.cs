@@ -1,7 +1,6 @@
 ﻿using ChampionsChromo.Core.Entities;
 using ChampionsChromo.Core.Repositories.Interfaces;
 using ChampionsChromo.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
 namespace ChampionsChromo.Infrastructure.Repositories;
