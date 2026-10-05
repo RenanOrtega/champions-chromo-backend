@@ -1,13 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ChampionsChromo.Api.Middlewares;
 using ChampionsChromo.Application;
-using ChampionsChromo.Core.Clients.Interfaces;
 using ChampionsChromo.Core.Extensions;
 using ChampionsChromo.Core.Options;
 using ChampionsChromo.Infrastructure;
-using ChampionsChromo.Infrastructure.Clients;
 using ChampionsChromo.Infrastructure.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -60,13 +57,6 @@ builder.Services.AddAuthorization();
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings")
 );
-
-builder.Services.Configure<AbacatePayOptions>(
-    builder.Configuration.GetSection("AbacatePay")
-);
-
-builder.Services
-    .AddHttpClient<IAbacatePayClient, AbacatePayClient>();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
