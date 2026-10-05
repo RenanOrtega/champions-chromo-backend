@@ -8,7 +8,7 @@ namespace ChampionsChromo.Application.Orders.Commands.CreateOrder;
 public class CreateOrderCommand : IRequest<Result<CreateOrderSummaryDto>>
 {
     public IList<CreateAlbumOrderCommand> Albums { get; set; } = [];
-    public int PriceTotal { get; set; }
+    public decimal PriceTotal { get; set; }
     public CustomerCommand? Customer { get; set; }
 }
 

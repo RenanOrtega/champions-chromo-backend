@@ -6,7 +6,7 @@ public class OrderSummary : Entity
 {
     public IList<AlbumOrder> Albums { get; set; } = [];
     public Customer? Customer { get; set; }
-    public int PriceTotal { get; set; }
+    public decimal PriceTotal { get; set; }
 }
 
 public class AlbumOrder
