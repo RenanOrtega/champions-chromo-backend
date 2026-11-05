@@ -10,6 +10,7 @@ public class OrderSummary : Entity
     public string? CouponCode { get; set; }
     public decimal Discount { get; set; }
     public decimal PriceTotal { get; set; }
+    public OrderPayment? Payment { get; set; }
 }
 
 public class AlbumOrder

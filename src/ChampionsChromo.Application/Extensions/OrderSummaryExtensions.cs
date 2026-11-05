@@ -1,4 +1,5 @@
 ﻿using ChampionsChromo.Core.Entities;
+using ChampionsChromo.Core.Enums;
 using ChampionsChromo.Core.Models;
 
 namespace ChampionsChromo.Application.Extensions;
@@ -46,7 +47,10 @@ public static class OrderSummaryExtensions
             Subtotal = order.Subtotal,
             CouponCode = order.CouponCode,
             Discount = order.Discount,
-            PriceTotal = order.PriceTotal
+            PriceTotal = order.PriceTotal,
+            PaymentStatus = order.Payment?.Status ?? PaymentStatus.NotStarted,
+            PaidAt = order.Payment?.PaidAt,
+            CreatedAt = order.CreatedAt
         };
     }
 

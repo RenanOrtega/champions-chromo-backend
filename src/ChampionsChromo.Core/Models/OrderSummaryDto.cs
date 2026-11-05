@@ -13,6 +13,9 @@ public class OrderSummaryDto
     public string? CouponCode { get; set; }
     public decimal Discount { get; set; }
     public decimal PriceTotal { get; set; }
+    public PaymentStatus PaymentStatus { get; set; }
+    public DateTime? PaidAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 public class SchoolOrderDto
