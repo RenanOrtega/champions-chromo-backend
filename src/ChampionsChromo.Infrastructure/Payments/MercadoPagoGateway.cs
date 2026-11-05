@@ -59,12 +59,30 @@ public class MercadoPagoGateway(
             }
         };
 
-        using var message = NewRequest(HttpMethod.Post, "/v1/orders");
-        message.Headers.Add("X-Idempotency-Key", request.IdempotencyKey);
-        message.Content = JsonContent.Create(body);
+        // Mercado Pago answers 423 (resource_locked) while another request with the same idempotency key
+        // is still being processed. Retrying returns the same order instead of an error.
+        const int maxAttempts = 4;
+        HttpResponseMessage response;
+        string content;
+        var attempt = 0;
+        while (true)
+        {
+            attempt++;
+            using var message = NewRequest(HttpMethod.Post, "/v1/orders");
+            message.Headers.Add("X-Idempotency-Key", request.IdempotencyKey);
+            message.Content = JsonContent.Create(body);
 
-        using var response = await _httpClient.SendAsync(message, cancellationToken);
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            response = await _httpClient.SendAsync(message, cancellationToken);
+            content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (response.StatusCode != HttpStatusCode.Locked || attempt >= maxAttempts)
+                break;
+
+            response.Dispose();
+            await Task.Delay(TimeSpan.FromSeconds(attempt), cancellationToken);
+        }
+
+        using var _ = response;
 
         if (!response.IsSuccessStatusCode)
         {

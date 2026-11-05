@@ -69,6 +69,18 @@ public class CreatePixPaymentCommandHandler(
         }
         catch (PaymentGatewayException)
         {
+            // Two requests for the same order at once share the idempotency key, and Mercado Pago may
+            // reject the second while the first is still being processed. If the other request saved
+            // a valid Pix in the meantime, hand that one out instead of failing.
+            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+            var reloaded = await _orderRepository.GetByIdAsync(order.Id);
+            if (reloaded?.Payment?.Status == PaymentStatus.AwaitingPayment
+                && reloaded.Payment.Attempt == attempt
+                && reloaded.Payment.ExpiresAt > DateTime.UtcNow)
+            {
+                return Result<PixPaymentDto>.Success(PaymentSync.ToDto(reloaded));
+            }
+
             return Result<PixPaymentDto>.Failure("Não foi possível gerar o Pix agora. Tente novamente em instantes.");
         }
 
