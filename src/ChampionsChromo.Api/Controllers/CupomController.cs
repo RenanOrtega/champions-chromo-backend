@@ -17,7 +17,7 @@ public class CupomController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Create(CreateCupomCommand command)
     {
         var result = await _mediator.Send(command);
@@ -29,6 +29,7 @@ public class CupomController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _mediator.Send(new GetCupomByIdQuery(id));
@@ -40,6 +41,7 @@ public class CupomController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetAll()
     {
         var result = await _mediator.Send(new GetCupomsQuery());
@@ -48,7 +50,7 @@ public class CupomController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         var result = await _mediator.Send(new DeleteCupomCommand(id));
@@ -60,7 +62,7 @@ public class CupomController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Update(UpdateCupomCommand command, [FromRoute] string id)
     {
         command.Id = id;

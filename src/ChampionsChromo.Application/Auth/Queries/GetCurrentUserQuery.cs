@@ -4,4 +4,4 @@ using MediatR;
 
 namespace ChampionsChromo.Application.Auth.Queries;
 
-public record GetCurrentUserQuery(string Token) : IRequest<Result<User?>>;
+public record GetCurrentUserQuery(string UserId) : IRequest<Result<User?>>;

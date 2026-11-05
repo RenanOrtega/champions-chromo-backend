@@ -6,6 +6,7 @@ using ChampionsChromo.Application.Orders.Queries.GetOrders;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ChampionsChromo.Api.Controllers
 {
@@ -16,6 +17,7 @@ namespace ChampionsChromo.Api.Controllers
         private readonly IMediator _mediator = mediator;
 
         [HttpPost]
+        [EnableRateLimiting("order")]
         public async Task<IActionResult> Create(CreateOrderCommand command)
         {
             var result = await _mediator.Send(command);
@@ -27,6 +29,7 @@ namespace ChampionsChromo.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetById(string id)
         {
             var result = await _mediator.Send(new GetOrderByIdQuery(id));
@@ -38,6 +41,7 @@ namespace ChampionsChromo.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetOrdersQuery());
@@ -46,7 +50,7 @@ namespace ChampionsChromo.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
             var result = await _mediator.Send(new DeleteOrderCommand(id));
@@ -58,7 +62,7 @@ namespace ChampionsChromo.Api.Controllers
         }
 
         [HttpPatch("{id}")]
-        [Authorize]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(UpdateOrderCommand command, [FromRoute] string id)
         {
             command.Id = id;

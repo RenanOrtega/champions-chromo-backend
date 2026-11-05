@@ -11,7 +11,8 @@ public interface IAuthService
     (string, DateTime) GenerateJwtToken(User user);
     string GenerateRefreshToken();
     void WriteAuthTokenAsHttpOnlyCookie(string cookieName, string token, DateTime expiration);
-    Task<User?> GetCurrentUserAsync(string token);
+    Task LogoutAsync(string? refreshToken);
+    Task<User?> GetUserByIdAsync(string userId);
     bool VerifyPassword(string password, string hash);
     string HashPassword(string password);
 }

@@ -12,7 +12,7 @@ public class GetCurrentUserQueryHandler(IAuthService authService) : IRequestHand
 
     public async Task<Result<User?>> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
     {
-        var user = await _authService.GetCurrentUserAsync(request.Token);
+        var user = await _authService.GetUserByIdAsync(request.UserId);
         return Result<User?>.Success(user);
     }
 }

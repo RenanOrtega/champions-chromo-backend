@@ -5,18 +5,17 @@ using MediatR;
 
 namespace ChampionsChromo.Application.Orders.Commands.CreateOrder;
 
+// Prices, album names and schools are read from the database, never from the request.
 public class CreateOrderCommand : IRequest<Result<CreateOrderSummaryDto>>
 {
     public IList<CreateAlbumOrderCommand> Albums { get; set; } = [];
-    public decimal PriceTotal { get; set; }
+    public string? CouponCode { get; set; }
     public CustomerCommand? Customer { get; set; }
 }
 
 public class CreateAlbumOrderCommand
 {
     public string AlbumId { get; set; } = string.Empty;
-    public string AlbumName { get; set; } = string.Empty;
-    public string SchoolId { get; set; } = string.Empty;
     public IList<CreateStickerOrderItemCommand> Stickers { get; set; } = [];
 }
 

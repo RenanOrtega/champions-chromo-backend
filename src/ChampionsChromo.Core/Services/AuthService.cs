@@ -88,7 +88,9 @@ public class AuthService(
         {
             Username = username,
             PasswordHash = HashPassword(password),
-            Roles = ["user"],
+            // Register is only reachable in Development (see AuthController),
+            // where the local seed needs an admin account.
+            Roles = ["admin"],
             CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
@@ -109,22 +111,29 @@ public class AuthService(
         WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", refreshToken, refreshTokenExpirationDateInUtc);
     }
 
-    public async Task<User?> GetCurrentUserAsync(string token)
+    public async Task LogoutAsync(string? refreshToken)
     {
-        try
+        if (!string.IsNullOrEmpty(refreshToken))
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var jsonToken = tokenHandler.ReadJwtToken(token);
-
-            var userIdClaim = jsonToken.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub);
-            if (userIdClaim == null) return null;
-
-            return await _userRepository.GetByIdAsync(userIdClaim.Value);
+            var user = await _userRepository.GetByRefreshToken(refreshToken);
+            if (user is not null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiresAtUtc = null;
+                await _userRepository.UpdateAsync(user);
+            }
         }
-        catch
-        {
+
+        DeleteAuthCookie("ACCESS_TOKEN");
+        DeleteAuthCookie("REFRESH_TOKEN");
+    }
+
+    public async Task<User?> GetUserByIdAsync(string userId)
+    {
+        if (!MongoDB.Bson.ObjectId.TryParse(userId, out _))
             return null;
-        }
+
+        return await _userRepository.GetByIdAsync(userId);
     }
 
     public (string, DateTime) GenerateJwtToken(User user)
@@ -138,8 +147,9 @@ public class AuthService(
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Name, user.Username),
-            new(ClaimTypes.NameIdentifier, user.Username)
         };
+
+        claims.AddRange(user.Roles.Select(role => new Claim("role", role)));
 
         var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationTimeInMinutes);
 
@@ -171,7 +181,18 @@ public class AuthService(
             Expires = expiration,
             IsEssential = true,
             Secure = true,
-            SameSite = SameSiteMode.None,
+            SameSite = SameSiteMode.Lax,
+            Path = "/",
+        });
+    }
+
+    private void DeleteAuthCookie(string cookieName)
+    {
+        _httpContextAccessor.HttpContext?.Response.Cookies.Delete(cookieName, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
             Path = "/",
         });
     }

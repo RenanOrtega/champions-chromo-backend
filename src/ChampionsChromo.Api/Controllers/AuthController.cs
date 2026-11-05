@@ -1,28 +1,37 @@
 ﻿using ChampionsChromo.Application.Auth.Commands;
 using ChampionsChromo.Application.Auth.Queries;
+using System.IdentityModel.Tokens.Jwt;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ChampionsChromo.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(IMediator mediator) : ControllerBase
+public class AuthController(IMediator mediator, IWebHostEnvironment environment) : ControllerBase
 {
     private readonly IMediator _mediator = mediator;
+    private readonly IWebHostEnvironment _environment = environment;
 
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommand command)
     {
-        var result = await _mediator.Send(command);
-
-        if (!result.IsSuccess)
+        try
         {
-            Console.WriteLine(result.Error);
-            return Unauthorized(result.Error);
-        }
+            var result = await _mediator.Send(command);
 
-        return Ok();
+            if (!result.IsSuccess)
+                return Unauthorized(result.Error);
+
+            return Ok();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized("Usuário ou senha inválidos.");
+        }
     }
 
     [HttpPost("refresh")]
@@ -34,10 +43,7 @@ public class AuthController(IMediator mediator) : ControllerBase
             var result = await _mediator.Send(new RefreshCommand(refreshToken));
 
             if (!result.IsSuccess)
-            {
-                Console.WriteLine(result.Error);
                 return Unauthorized(result.Error);
-            }
 
             return Ok();
         }
@@ -47,48 +53,39 @@ public class AuthController(IMediator mediator) : ControllerBase
         }
     }
 
+    // Account creation is only available when running locally (Development).
+    // In production admins are created directly in the database.
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand command)
     {
+        if (!_environment.IsDevelopment())
+            return NotFound();
+
         await _mediator.Send(command);
 
         return Created();
     }
 
     [HttpPost("logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddDays(-1) 
-        };
+        await _mediator.Send(new LogoutCommand(Request.Cookies["REFRESH_TOKEN"]));
 
-        Response.Cookies.Append("ACCESS_TOKEN", "", cookieOptions);
-        Response.Cookies.Append("REFRESH_TOKEN", "", cookieOptions);
-        
         return Ok();
     }
 
     [HttpGet("me")]
+    [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var token = GetTokenFromCookie();
-        if (string.IsNullOrEmpty(token))
-        {
+        var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (string.IsNullOrEmpty(userId))
             return Unauthorized();
-        }
 
-        var query = new GetCurrentUserQuery(token);
-        var result = await _mediator.Send(query);
+        var result = await _mediator.Send(new GetCurrentUserQuery(userId));
 
         if (result.Value == null)
-        {
             return Unauthorized(new { message = "Usuário não autenticado" });
-        }
 
         return Ok(new
         {
@@ -97,10 +94,5 @@ public class AuthController(IMediator mediator) : ControllerBase
             roles = result.Value.Roles,
             lastLoginAt = result.Value.LastLoginAt
         });
-    }
-
-    private string? GetTokenFromCookie()
-    {
-        return Request.Cookies["ACCESS_TOKEN"];
     }
 }
