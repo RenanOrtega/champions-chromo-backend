@@ -1,5 +1,7 @@
 ﻿using ChampionsChromo.Core.Repositories.Interfaces;
+using ChampionsChromo.Core.Services.Interfaces;
 using ChampionsChromo.Infrastructure.Context;
+using ChampionsChromo.Infrastructure.Payments;
 using ChampionsChromo.Infrastructure.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +20,11 @@ public static class DependencyInjection
             .AddScoped<IUserRepository, UserRepository>()
             .AddScoped<ICupomRepository, CupomRepository>()
             .AddScoped<IOrderRepository, OrderRepository>();
+
+        services.AddHttpClient<IPaymentGateway, MercadoPagoGateway>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(15);
+        });
 
         return services;
     }

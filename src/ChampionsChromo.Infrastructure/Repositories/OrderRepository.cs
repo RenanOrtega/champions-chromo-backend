@@ -153,6 +153,16 @@ public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(
         return await sorted.ToListAsync();
     }
 
+    public async Task SetPaymentAsync(string id, OrderPayment payment)
+    {
+        var filter = Builders<OrderSummary>.Filter.Eq(a => a.Id, id);
+        var update = Builders<OrderSummary>.Update
+            .Set(a => a.Payment, payment)
+            .Set(a => a.UpdatedAt, DateTime.UtcNow);
+
+        await _collection.UpdateOneAsync(filter, update);
+    }
+
     public async Task UpdateAsync(string Id, UpdateOrderDto updateOrderDto)
     {
         var filter = Builders<OrderSummary>.Filter.Eq(a => a.Id, Id);
