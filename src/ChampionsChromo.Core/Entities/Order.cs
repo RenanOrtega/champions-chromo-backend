@@ -6,6 +6,9 @@ public class OrderSummary : Entity
 {
     public IList<AlbumOrder> Albums { get; set; } = [];
     public Customer? Customer { get; set; }
+    public decimal Subtotal { get; set; }
+    public string? CouponCode { get; set; }
+    public decimal Discount { get; set; }
     public decimal PriceTotal { get; set; }
 }
 

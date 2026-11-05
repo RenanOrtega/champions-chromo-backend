@@ -22,19 +22,15 @@ public class ValidateCouponQueryHandler(ICupomRepository cupomRepository, IMappe
             };
         }
 
-        if (coupon.UsageLimit > 0 && coupon.UsedCount >= coupon.UsageLimit)
+        var reason = CouponRules.GetUnavailableReason(coupon, DateTime.UtcNow);
+        if (reason is not null)
         {
             return new ValidateCouponResponse
             {
                 Coupon = null,
-                Message = "Cupom esgotado."
+                Message = reason
             };
         }
-
-        //if (coupon.ExpiresAt < DateTime.UtcNow)
-        //{
-        //    return new ValidateCouponResponse { Coupon = null, Message = "Coupon has expired." };
-        //}
 
         return new ValidateCouponResponse
         {

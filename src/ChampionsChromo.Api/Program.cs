@@ -1,12 +1,15 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using ChampionsChromo.Application;
 using ChampionsChromo.Core.Extensions;
 using ChampionsChromo.Core.Options;
 using ChampionsChromo.Infrastructure;
 using ChampionsChromo.Infrastructure.Configurations;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +30,9 @@ builder.Services.AddAuthentication(opt =>
     opt.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
+    // Keep claim names exactly as written in the token ("sub", "role").
+    options.MapInboundClaims = false;
+
     var jwtOptions = builder.Configuration
         .GetSection(JwtOptions.JwtOptionsKey)
         .Get<JwtOptions>() ?? throw new ArgumentException(nameof(JwtOptions));
@@ -39,7 +45,9 @@ builder.Services.AddAuthentication(opt =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtOptions.Issuer,
         ValidAudience = jwtOptions.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
+        NameClaimType = "name",
+        RoleClaimType = "role"
     };
 
     options.Events = new JwtBearerEvents
@@ -53,6 +61,37 @@ builder.Services.AddAuthentication(opt =>
 });
 
 builder.Services.AddAuthorization();
+
+// Limits per client IP. Behind Fly the real client IP comes in the Fly-Client-IP header.
+static string ClientIp(HttpContext context) =>
+    context.Request.Headers["Fly-Client-IP"].FirstOrDefault()
+    ?? context.Connection.RemoteIpAddress?.ToString()
+    ?? "unknown";
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Login: 5 attempts per minute per IP.
+    options.AddPolicy("login", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientIp(context),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+
+    // Order creation: 10 orders per 15 minutes per IP.
+    options.AddPolicy("order", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientIp(context),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(15),
+            QueueLimit = 0
+        }));
+});
 
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDbSettings")
@@ -97,7 +136,26 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+
+// Validation errors become 400 instead of 500.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (ValidationException ex) when (!context.Response.HasStarted)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            errors = ex.Errors.Select(e => e.ErrorMessage).Distinct()
+        });
+    }
+});
+
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

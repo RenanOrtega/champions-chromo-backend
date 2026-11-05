@@ -16,7 +16,7 @@ public class SchoolController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Create(CreateSchoolCommand command)
     {
         var result = await _mediator.Send(command);
@@ -47,7 +47,7 @@ public class SchoolController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         var result = await _mediator.Send(new DeleteSchoolCommand(id));
@@ -59,7 +59,7 @@ public class SchoolController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Update(UpdateSchoolCommand command, [FromRoute] string id)
     {
         command.Id = id;

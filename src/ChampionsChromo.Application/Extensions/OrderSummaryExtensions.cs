@@ -43,6 +43,9 @@ public static class OrderSummaryExtensions
             Customer = customer,
             TotalAlbums = order.Albums.Count,
             TotalStickers = order.Albums.SelectMany(a => a.Stickers).Sum(s => s.Quantity),
+            Subtotal = order.Subtotal,
+            CouponCode = order.CouponCode,
+            Discount = order.Discount,
             PriceTotal = order.PriceTotal
         };
     }

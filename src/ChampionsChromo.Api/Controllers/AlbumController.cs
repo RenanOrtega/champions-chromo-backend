@@ -17,7 +17,7 @@ public class AlbumController(IMediator mediator) : ControllerBase
     private readonly IMediator _mediator = mediator;
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Create(CreateAlbumCommand command)
     {
         var result = await _mediator.Send(command);
@@ -59,7 +59,7 @@ public class AlbumController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         var result = await _mediator.Send(new DeleteAlbumCommand(id));
@@ -71,7 +71,7 @@ public class AlbumController(IMediator mediator) : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    [Authorize]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> Update(UpdateAlbumCommmand command, [FromRoute] string id)
     {
         command.Id = id;

@@ -9,6 +9,9 @@ public class OrderSummaryDto
     public CustomerDto? Customer { get; set; }
     public int TotalAlbums { get; set; }
     public int TotalStickers { get; set; }
+    public decimal Subtotal { get; set; }
+    public string? CouponCode { get; set; }
+    public decimal Discount { get; set; }
     public decimal PriceTotal { get; set; }
 }
 
