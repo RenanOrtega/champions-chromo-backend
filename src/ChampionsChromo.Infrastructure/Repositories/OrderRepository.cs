@@ -9,17 +9,25 @@ namespace ChampionsChromo.Infrastructure.Repositories;
 
 public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(context), IOrderRepository
 {
-    public async Task<MetricsDto> GetDashboardMetricsAsync(int daysBack = 30)
+    // Fuso usado para agrupar as vendas por dia, para que o dia do gráfico bata com o dia local da loja
+    private const string DashboardTimezone = "America/Sao_Paulo";
+
+    public async Task<MetricsDto> GetDashboardMetricsAsync(DateTime? from = null, DateTime? to = null)
     {
-        var startDate = DateTime.UtcNow.AddDays(-daysBack);
+        // Filtrar por data (sem limites = período todo)
+        var createdAtFilter = new BsonDocument();
+        if (from.HasValue)
+            createdAtFilter.Add("$gte", DateTime.SpecifyKind(from.Value, DateTimeKind.Utc));
+        if (to.HasValue)
+            createdAtFilter.Add("$lt", DateTime.SpecifyKind(to.Value, DateTimeKind.Utc));
+
+        var matchStage = createdAtFilter.ElementCount > 0
+            ? new BsonDocument("$match", new BsonDocument("CreatedAt", createdAtFilter))
+            : new BsonDocument("$match", new BsonDocument());
 
         var pipeline = new[]
         {
-            // Filtrar por data
-            new BsonDocument("$match", new BsonDocument
-            {
-                { "CreatedAt", new BsonDocument("$gte", startDate) }
-            }),
+            matchStage,
             
             // Adicionar campos calculados
             new BsonDocument("$addFields", new BsonDocument
@@ -38,7 +46,8 @@ public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(
                 { "DateOnly", new BsonDocument("$dateToString", new BsonDocument
                 {
                     { "format", "%Y-%m-%d" },
-                    { "date", "$CreatedAt" }
+                    { "date", "$CreatedAt" },
+                    { "timezone", DashboardTimezone }
                 }) }
             }),
 

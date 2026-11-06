@@ -17,7 +17,7 @@ public class GetMetricsQueryHandler(IAlbumRepository albumRepository, ISchoolRep
     {
         try
         {
-            var metrics = await _orderRepository.GetDashboardMetricsAsync(request.DaysBack);
+            var metrics = await _orderRepository.GetDashboardMetricsAsync(request.From, request.To);
 
             // Manter as métricas existentes
             metrics.AlbumsCount = await _albumRepository.CountAsync();
