@@ -6,6 +6,6 @@ namespace ChampionsChromo.Core.Repositories.Interfaces;
 public interface IOrderRepository : IRepository<OrderSummary>
 {
     Task UpdateAsync(string Id, UpdateOrderDto updateOrderDto);
-    Task<MetricsDto> GetDashboardMetricsAsync(int daysBack = 30);
+    Task<MetricsDto> GetDashboardMetricsAsync(DateTime? from = null, DateTime? to = null);
     Task<IEnumerable<OrderSummary>> GetAllOrderedByCreatedAsync(bool descending = true);
 }
