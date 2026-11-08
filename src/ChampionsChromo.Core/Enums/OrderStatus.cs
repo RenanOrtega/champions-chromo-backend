@@ -8,9 +8,10 @@ public enum OrderStatus
     New,
     AwaitingPayment,
     Paid,
-    InPreparation,
+    // "Feito": the team took the order and asked for the cards to be made (set by the admin).
+    Made,
+    // "Enviado": the cards were sent (set by the admin).
     Shipped,
-    Delivered,
     Expired,
     Cancelled,
     Refunded

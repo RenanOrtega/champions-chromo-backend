@@ -51,8 +51,8 @@ public class CreatePixPaymentCommandHandler(
             return Result<PixPaymentDto>.Success(PaymentSync.ToDto(order));
         }
 
-        if (order.Status is OrderStatus.Cancelled or OrderStatus.Refunded or OrderStatus.InPreparation
-            or OrderStatus.Shipped or OrderStatus.Delivered)
+        if (order.Status is OrderStatus.Cancelled or OrderStatus.Refunded or OrderStatus.Made
+            or OrderStatus.Shipped)
             return Result<PixPaymentDto>.Failure("Este pedido não aceita mais pagamento.");
 
         if (order.PriceTotal <= 0)
