@@ -1,6 +1,7 @@
 ﻿using ChampionsChromo.Application.Orders.Commands.CreateOrder;
 using ChampionsChromo.Application.Orders.Commands.DeleteOrder;
 using ChampionsChromo.Application.Orders.Commands.UpdateOrder;
+using ChampionsChromo.Application.Orders.Commands.UpdateOrderStatus;
 using ChampionsChromo.Application.Orders.Queries.GetOrderById;
 using ChampionsChromo.Application.Orders.Queries.GetOrders;
 using MediatR;
@@ -57,6 +58,20 @@ namespace ChampionsChromo.Api.Controllers
 
             if (result.IsSuccess)
                 return Ok();
+
+            return NotFound(result.Error);
+        }
+
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> UpdateStatus(UpdateOrderStatusCommand command, [FromRoute] string id)
+        {
+            command.Id = id;
+            command.ChangedBy = User.FindFirst("name")?.Value ?? "admin";
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+                return NoContent();
 
             return NotFound(result.Error);
         }

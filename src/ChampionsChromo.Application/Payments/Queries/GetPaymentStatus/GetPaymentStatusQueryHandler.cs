@@ -46,8 +46,9 @@ public class GetPaymentStatusQueryHandler(
                     var updated = PaymentSync.Apply(order, gatewayOrder, now, out _);
                     if (updated is not null)
                     {
+                        var statusChange = PaymentSync.StatusChangeFor(order, updated.Status, now, "mercadopago");
                         order.Payment = updated;
-                        await _orderRepository.SetPaymentAsync(order.Id, updated);
+                        await _orderRepository.SetPaymentAsync(order.Id, updated, statusChange);
                     }
                 }
             }

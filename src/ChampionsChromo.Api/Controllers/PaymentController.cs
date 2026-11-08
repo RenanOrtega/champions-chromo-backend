@@ -1,6 +1,7 @@
 using ChampionsChromo.Api.Payments;
 using ChampionsChromo.Application.Payments.Commands.CreatePixPayment;
 using ChampionsChromo.Application.Payments.Commands.ProcessMercadoPagoNotification;
+using ChampionsChromo.Application.Payments.Queries.GetPaymentConfig;
 using ChampionsChromo.Application.Payments.Queries.GetPaymentStatus;
 using ChampionsChromo.Core.Options;
 using MediatR;
@@ -20,6 +21,13 @@ public class PaymentController(
     private readonly IMediator _mediator = mediator;
     private readonly MercadoPagoOptions _options = options.Value;
     private readonly ILogger<PaymentController> _logger = logger;
+
+    // Which checkout the store must show: "manual" (WhatsApp) or "mercadoPagoPix".
+    [HttpGet("config")]
+    public async Task<IActionResult> GetConfig(CancellationToken cancellationToken)
+    {
+        return Ok(await _mediator.Send(new GetPaymentConfigQuery(), cancellationToken));
+    }
 
     // Generates (or returns the still valid) Pix for an order. The amount always comes from the order in the database.
     [HttpPost("{orderId}/pix")]

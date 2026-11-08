@@ -67,6 +67,29 @@ public static class PaymentSync
         return current;
     }
 
+    /// <summary>
+    /// How a payment status moves the order status. Returns null when the order should stay as it is
+    /// (for example, an order already being prepared or shipped is not moved back by a late notification).
+    /// </summary>
+    public static OrderStatusChange? StatusChangeFor(OrderSummary order, PaymentStatus paymentStatus, DateTime now, string by)
+    {
+        OrderStatus? next = paymentStatus switch
+        {
+            PaymentStatus.Paid when order.Status is OrderStatus.New or OrderStatus.AwaitingPayment
+                or OrderStatus.Expired or OrderStatus.Cancelled => OrderStatus.Paid,
+            PaymentStatus.AwaitingPayment when order.Status is OrderStatus.New or OrderStatus.Expired => OrderStatus.AwaitingPayment,
+            PaymentStatus.Expired when order.Status is OrderStatus.AwaitingPayment => OrderStatus.Expired,
+            PaymentStatus.Cancelled when order.Status is OrderStatus.AwaitingPayment => OrderStatus.Cancelled,
+            PaymentStatus.Refunded when order.Status is not OrderStatus.Refunded => OrderStatus.Refunded,
+            _ => null
+        };
+
+        if (next is null || next == order.Status)
+            return null;
+
+        return new OrderStatusChange { Status = next.Value, At = now, By = by };
+    }
+
     public static PixPaymentDto ToDto(OrderSummary order) => new()
     {
         OrderId = order.Id,

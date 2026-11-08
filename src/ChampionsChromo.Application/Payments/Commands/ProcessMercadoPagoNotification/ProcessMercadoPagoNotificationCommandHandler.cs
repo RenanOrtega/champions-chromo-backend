@@ -46,7 +46,8 @@ public class ProcessMercadoPagoNotificationCommandHandler(
 
         if (updated is not null)
         {
-            await _orderRepository.SetPaymentAsync(order.Id, updated);
+            var statusChange = PaymentSync.StatusChangeFor(order, updated.Status, DateTime.UtcNow, "mercadopago");
+            await _orderRepository.SetPaymentAsync(order.Id, updated, statusChange);
             _logger.LogInformation("Order {OrderId} payment is now {Status} (Mercado Pago {ProviderOrderId}: {ProviderStatus}/{Detail})",
                 order.Id, updated.Status, gatewayOrder.Id, gatewayOrder.Status, gatewayOrder.StatusDetail);
         }

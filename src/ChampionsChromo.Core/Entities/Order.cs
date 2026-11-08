@@ -11,6 +11,8 @@ public class OrderSummary : Entity
     public decimal Discount { get; set; }
     public decimal PriceTotal { get; set; }
     public OrderPayment? Payment { get; set; }
+    public OrderStatus Status { get; set; } = OrderStatus.New;
+    public IList<OrderStatusChange> StatusHistory { get; set; } = [];
 }
 
 public class AlbumOrder

@@ -14,6 +14,7 @@ namespace ChampionsChromo.Application.Payments.Commands.CreatePixPayment;
 public class CreatePixPaymentCommandHandler(
     IOrderRepository orderRepository,
     IPaymentGateway paymentGateway,
+    IPaymentModeProvider paymentModeProvider,
     IOptions<MercadoPagoOptions> options) : IRequestHandler<CreatePixPaymentCommand, Result<PixPaymentDto>>
 {
     // A Pix that expires in less than this is not handed out again; a new one is generated.
@@ -21,10 +22,14 @@ public class CreatePixPaymentCommandHandler(
 
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly IPaymentGateway _paymentGateway = paymentGateway;
+    private readonly IPaymentModeProvider _paymentModeProvider = paymentModeProvider;
     private readonly MercadoPagoOptions _options = options.Value;
 
     public async Task<Result<PixPaymentDto>> Handle(CreatePixPaymentCommand request, CancellationToken cancellationToken)
     {
+        if (_paymentModeProvider.Current != PaymentMode.MercadoPagoPix)
+            return Result<PixPaymentDto>.Failure("Pagamento online desativado.");
+
         if (!ObjectId.TryParse(request.OrderId, out _))
             return Result<PixPaymentDto>.Failure("Pedido não encontrado.");
 
@@ -45,6 +50,10 @@ public class CreatePixPaymentCommandHandler(
         {
             return Result<PixPaymentDto>.Success(PaymentSync.ToDto(order));
         }
+
+        if (order.Status is OrderStatus.Cancelled or OrderStatus.Refunded or OrderStatus.InPreparation
+            or OrderStatus.Shipped or OrderStatus.Delivered)
+            return Result<PixPaymentDto>.Failure("Este pedido não aceita mais pagamento.");
 
         if (order.PriceTotal <= 0)
             return Result<PixPaymentDto>.Failure("Pedido sem valor a pagar.");
@@ -102,7 +111,8 @@ public class CreatePixPaymentCommandHandler(
             UpdatedAt = now
         };
 
-        await _orderRepository.SetPaymentAsync(order.Id, order.Payment);
+        var statusChange = PaymentSync.StatusChangeFor(order, order.Payment.Status, now, "system");
+        await _orderRepository.SetPaymentAsync(order.Id, order.Payment, statusChange);
 
         return Result<PixPaymentDto>.Success(PaymentSync.ToDto(order));
     }

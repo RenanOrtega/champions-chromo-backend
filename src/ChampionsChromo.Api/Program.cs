@@ -60,6 +60,10 @@ builder.Services.AddAuthentication(opt =>
     };
 });
 
+builder.Services.Configure<PaymentOptions>(
+    builder.Configuration.GetSection(PaymentOptions.SectionName)
+);
+
 builder.Services.Configure<MercadoPagoOptions>(
     builder.Configuration.GetSection(MercadoPagoOptions.SectionName)
 );

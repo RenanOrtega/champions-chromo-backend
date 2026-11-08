@@ -18,6 +18,8 @@ public static class DependencyInjection
             cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         });
 
+        services.AddSingleton<Payments.IPaymentModeProvider, Payments.PaymentModeProvider>();
+
         return services;
     }
 }

@@ -48,7 +48,17 @@ public static class OrderSummaryExtensions
             CouponCode = order.CouponCode,
             Discount = order.Discount,
             PriceTotal = order.PriceTotal,
+            Status = order.Status,
+            StatusHistory = [.. order.StatusHistory.Select(h => new OrderStatusChangeDto
+            {
+                Status = h.Status,
+                At = h.At,
+                By = h.By,
+                Note = h.Note
+            })],
             PaymentStatus = order.Payment?.Status ?? PaymentStatus.NotStarted,
+            PaymentProviderOrderId = order.Payment?.ProviderOrderId,
+            PaymentExpiresAt = order.Payment?.ExpiresAt,
             PaidAt = order.Payment?.PaidAt,
             CreatedAt = order.CreatedAt
         };
