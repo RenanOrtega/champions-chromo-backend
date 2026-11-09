@@ -156,6 +156,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddHostedService<ChampionsChromo.Api.Startup.LegacyOrderStatusBackfill>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
