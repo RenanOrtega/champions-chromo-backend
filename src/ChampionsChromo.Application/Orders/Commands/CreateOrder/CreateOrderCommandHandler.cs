@@ -1,5 +1,6 @@
 ﻿using ChampionsChromo.Application.Common.Models;
 using ChampionsChromo.Application.Cupoms;
+using ChampionsChromo.Application.Payments;
 using ChampionsChromo.Core.Entities;
 using ChampionsChromo.Core.Enums;
 using ChampionsChromo.Core.Models;
@@ -12,7 +13,8 @@ namespace ChampionsChromo.Application.Orders.Commands.CreateOrder;
 public class CreateOrderCommandHandler(
     IOrderRepository orderRepository,
     IAlbumRepository albumRepository,
-    ICupomRepository cupomRepository) : IRequestHandler<CreateOrderCommand, Result<CreateOrderSummaryDto>>
+    ICupomRepository cupomRepository,
+    IPaymentModeProvider paymentModeProvider) : IRequestHandler<CreateOrderCommand, Result<CreateOrderSummaryDto>>
 {
     // Same defaults the store uses when an album has no price set for a sticker type.
     private const decimal DefaultCommonPrice = 1m;
@@ -22,6 +24,7 @@ public class CreateOrderCommandHandler(
     private readonly IOrderRepository _orderRepository = orderRepository;
     private readonly IAlbumRepository _albumRepository = albumRepository;
     private readonly ICupomRepository _cupomRepository = cupomRepository;
+    private readonly IPaymentModeProvider _paymentModeProvider = paymentModeProvider;
 
     public async Task<Result<CreateOrderSummaryDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
@@ -84,8 +87,14 @@ public class CreateOrderCommandHandler(
             }
         }
 
+        var initialStatus = _paymentModeProvider.Current == PaymentMode.MercadoPagoPix
+            ? OrderStatus.AwaitingPayment
+            : OrderStatus.New;
+
         var entity = new OrderSummary
         {
+            Status = initialStatus,
+            StatusHistory = [new OrderStatusChange { Status = initialStatus, By = "system" }],
             Albums = albumOrders,
             Customer = new Customer
             {

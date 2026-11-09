@@ -60,6 +60,14 @@ builder.Services.AddAuthentication(opt =>
     };
 });
 
+builder.Services.Configure<PaymentOptions>(
+    builder.Configuration.GetSection(PaymentOptions.SectionName)
+);
+
+builder.Services.Configure<MercadoPagoOptions>(
+    builder.Configuration.GetSection(MercadoPagoOptions.SectionName)
+);
+
 builder.Services.AddAuthorization();
 
 // Limits per client IP. Behind Fly the real client IP comes in the Fly-Client-IP header.
@@ -89,6 +97,26 @@ builder.Services.AddRateLimiter(options =>
         {
             PermitLimit = 10,
             Window = TimeSpan.FromMinutes(15),
+            QueueLimit = 0
+        }));
+
+    // Pix generation: 20 per 15 minutes per IP (an existing valid Pix is reused anyway).
+    options.AddPolicy("payment", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientIp(context),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(15),
+            QueueLimit = 0
+        }));
+
+    // Payment status polling: the store asks every few seconds while the Pix screen is open.
+    options.AddPolicy("payment-status", context => RateLimitPartition.GetFixedWindowLimiter(
+        ClientIp(context),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
 });

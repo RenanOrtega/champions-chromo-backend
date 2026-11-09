@@ -13,6 +13,21 @@ public class OrderSummaryDto
     public string? CouponCode { get; set; }
     public decimal Discount { get; set; }
     public decimal PriceTotal { get; set; }
+    public OrderStatus Status { get; set; }
+    public IList<OrderStatusChangeDto> StatusHistory { get; set; } = [];
+    public PaymentStatus PaymentStatus { get; set; }
+    public string? PaymentProviderOrderId { get; set; }
+    public DateTime? PaymentExpiresAt { get; set; }
+    public DateTime? PaidAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class OrderStatusChangeDto
+{
+    public OrderStatus Status { get; set; }
+    public DateTime At { get; set; }
+    public string By { get; set; } = string.Empty;
+    public string? Note { get; set; }
 }
 
 public class SchoolOrderDto
