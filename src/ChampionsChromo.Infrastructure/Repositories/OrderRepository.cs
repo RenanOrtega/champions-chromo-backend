@@ -190,6 +190,18 @@ public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(
         await _collection.UpdateOneAsync(filter, update);
     }
 
+    public async Task<long> BackfillLegacyStatusAsync(OrderStatusChange statusChange)
+    {
+        // Only documents that never had the field, so running it again (or on several machines) changes nothing.
+        var filter = Builders<OrderSummary>.Filter.Exists(a => a.Status, false);
+        var update = Builders<OrderSummary>.Update
+            .Set(a => a.Status, statusChange.Status)
+            .Set(a => a.StatusHistory, new List<OrderStatusChange> { statusChange });
+
+        var result = await _collection.UpdateManyAsync(filter, update);
+        return result.ModifiedCount;
+    }
+
     public async Task UpdateAsync(string Id, UpdateOrderDto updateOrderDto)
     {
         var filter = Builders<OrderSummary>.Filter.Eq(a => a.Id, Id);
