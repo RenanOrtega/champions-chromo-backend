@@ -90,6 +90,17 @@ public class CreatePixPaymentCommandHandler(
                 return Result<PixPaymentDto>.Success(PaymentSync.ToDto(reloaded));
             }
 
+            // Mercado Pago keeps answering the same (failed) order for an idempotency key it has seen.
+            // Record that this attempt was used, so "Tentar novamente" asks for a brand new Pix
+            // instead of getting the same failure back.
+            if (reloaded is not null && (reloaded.Payment?.Attempt ?? 0) < attempt)
+            {
+                var failed = reloaded.Payment ?? new OrderPayment();
+                failed.Attempt = attempt;
+                failed.UpdatedAt = DateTime.UtcNow;
+                await _orderRepository.SetPaymentAsync(order.Id, failed);
+            }
+
             return Result<PixPaymentDto>.Failure("Não foi possível gerar o Pix agora. Tente novamente em instantes.");
         }
 
