@@ -13,6 +13,9 @@ public class OrderSummary : Entity
     public OrderPayment? Payment { get; set; }
     public OrderStatus Status { get; set; } = OrderStatus.New;
     public IList<OrderStatusChange> StatusHistory { get; set; } = [];
+
+    // Soft delete: archived orders are hidden from the admin list but kept for payment history and webhooks.
+    public DateTime? ArchivedAt { get; set; }
 }
 
 public class AlbumOrder

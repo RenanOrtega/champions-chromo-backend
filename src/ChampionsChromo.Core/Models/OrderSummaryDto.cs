@@ -20,6 +20,7 @@ public class OrderSummaryDto
     public DateTime? PaymentExpiresAt { get; set; }
     public DateTime? PaidAt { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? ArchivedAt { get; set; }
 }
 
 public class OrderStatusChangeDto

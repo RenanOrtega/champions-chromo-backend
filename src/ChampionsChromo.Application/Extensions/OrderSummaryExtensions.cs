@@ -60,7 +60,8 @@ public static class OrderSummaryExtensions
             PaymentProviderOrderId = order.Payment?.ProviderOrderId,
             PaymentExpiresAt = order.Payment?.ExpiresAt,
             PaidAt = order.Payment?.PaidAt,
-            CreatedAt = order.CreatedAt
+            CreatedAt = order.CreatedAt,
+            ArchivedAt = order.ArchivedAt
         };
     }
 
