@@ -151,9 +151,14 @@ public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(
         };
     }
 
-    public async Task<IEnumerable<OrderSummary>> GetAllOrderedByCreatedAsync(bool descending = true)
+    public async Task<IEnumerable<OrderSummary>> GetAllOrderedByCreatedAsync(bool descending = true, bool includeArchived = false)
     {
-        var find = _collection.Find(_ => true);
+        // Eq(null) also matches documents created before the field existed.
+        var filter = includeArchived
+            ? Builders<OrderSummary>.Filter.Empty
+            : Builders<OrderSummary>.Filter.Eq(a => a.ArchivedAt, null);
+
+        var find = _collection.Find(filter);
 
         var sorted = descending
             ? find.SortByDescending(x => x.CreatedAt)
@@ -197,6 +202,22 @@ public class OrderRepository(MongoDbContext context) : Repository<OrderSummary>(
         var update = Builders<OrderSummary>.Update
             .Set(a => a.Status, statusChange.Status)
             .Set(a => a.StatusHistory, new List<OrderStatusChange> { statusChange });
+
+        var result = await _collection.UpdateManyAsync(filter, update);
+        return result.ModifiedCount;
+    }
+
+    public async Task<long> SetArchivedAsync(IEnumerable<string> ids, DateTime? archivedAt)
+    {
+        var builder = Builders<OrderSummary>.Filter;
+        // Only touch orders whose state actually changes, so archiving twice keeps the first date.
+        var filter = builder.In(a => a.Id, ids) & (archivedAt.HasValue
+            ? builder.Eq(a => a.ArchivedAt, null)
+            : builder.Ne(a => a.ArchivedAt, null));
+
+        var update = Builders<OrderSummary>.Update
+            .Set(a => a.ArchivedAt, archivedAt)
+            .Set(a => a.UpdatedAt, DateTime.UtcNow);
 
         var result = await _collection.UpdateManyAsync(filter, update);
         return result.ModifiedCount;

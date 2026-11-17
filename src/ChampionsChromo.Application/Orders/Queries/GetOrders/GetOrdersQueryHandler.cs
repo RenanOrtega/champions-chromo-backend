@@ -11,7 +11,7 @@ public class GetOrdersQueryHandler(IOrderRepository orderRepository) : IRequestH
     private readonly IOrderRepository _orderRepository = orderRepository;
     public async Task<Result<IEnumerable<OrderSummaryDto>>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
     {
-        var orders = await _orderRepository.GetAllOrderedByCreatedAsync();
+        var orders = await _orderRepository.GetAllOrderedByCreatedAsync(includeArchived: request.IncludeArchived);
 
         return Result<IEnumerable<OrderSummaryDto>>.Success(orders.Select(x => x.ToDto()));
     }

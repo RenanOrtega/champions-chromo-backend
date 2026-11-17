@@ -4,4 +4,4 @@ using MediatR;
 
 namespace ChampionsChromo.Application.Orders.Queries.GetOrders;
 
-public record GetOrdersQuery : IRequest<Result<IEnumerable<OrderSummaryDto>>>;
+public record GetOrdersQuery(bool IncludeArchived = false) : IRequest<Result<IEnumerable<OrderSummaryDto>>>;

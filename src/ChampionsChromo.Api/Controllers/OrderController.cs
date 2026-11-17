@@ -1,4 +1,5 @@
 ﻿using ChampionsChromo.Application.Orders.Commands.CreateOrder;
+using ChampionsChromo.Application.Orders.Commands.ArchiveOrders;
 using ChampionsChromo.Application.Orders.Commands.DeleteOrder;
 using ChampionsChromo.Application.Orders.Commands.UpdateOrder;
 using ChampionsChromo.Application.Orders.Commands.UpdateOrderStatus;
@@ -43,11 +44,25 @@ namespace ChampionsChromo.Api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] bool includeArchived = false)
         {
-            var result = await _mediator.Send(new GetOrdersQuery());
+            var result = await _mediator.Send(new GetOrdersQuery(includeArchived));
 
             return Ok(result.Value);
+        }
+
+        // Archives (soft delete) or unarchives one or more orders. Archived orders leave the admin list
+        // but stay in the database, so payment history and Mercado Pago webhooks keep working.
+        [HttpPost("archive")]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Archive(ArchiveOrdersCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result.IsSuccess)
+                return Ok(new { updated = result.Value });
+
+            return BadRequest(result.Error);
         }
 
         [HttpDelete("{id}")]
